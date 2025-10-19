@@ -1,0 +1,38 @@
+# ============================================
+# 🐍 PYTHON / DJANGO BACKEND
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments (nằm trong backend/)
+venv/
+env/
+.venv/
+
+# Database & Django-specific files
+db.sqlite3
+media/
+staticfiles/
+*.log
+local_settings.py
+.env
+.env.*
+
+# Unit test / coverage
+htmlcov/
+.coverage
+.tox/
+.nox/
+.cache
+.pytest_cache/
+.coverage.*
+nosetests.xml
+coverage.xml
+*.cover
+
+# PyInstaller
+*.spec
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
