@@ -90,7 +90,18 @@ DATABASES = {
     }
 }
 
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',  # Nếu muốn yêu cầu auth mặc định
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+    'rest_framework.parsers.JSONParser',
+    'rest_framework.parsers.MultiPartParser',
+    'rest_framework.parsers.FormParser',
+]}
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -109,7 +120,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+# đăng nhập bằng email
+AUTHENTICATION_BACKENDS = [
+    'api.backends.EmailModelBackend',
+]
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 

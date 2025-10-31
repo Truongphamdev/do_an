@@ -9,7 +9,8 @@ class User(AbstractUser):
         ('waiter', 'Waiter'),
         ('chef', 'Chef'),
         ('cashier', 'Cashier'),
-    ), default='waiter')
+        ('customer', 'Customer')
+    ), default='customer')
     def __str__(self):
         return self.username
 
@@ -47,7 +48,6 @@ class Table(models.Model):
         ('available', 'Available'),
         ('occupied', 'Occupied'),
         ('reserved', 'Reserved'),
-        ('customer', 'Customer')
     ), default='available')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
