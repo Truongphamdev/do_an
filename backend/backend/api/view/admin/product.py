@@ -1,0 +1,66 @@
+from rest_framework import viewsets
+from api.permission import IsAdminOrReadOnly
+from api.models import Product, Image
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework import status
+from api.serializers import ProductSerializer,ImageSerializer
+from rest_framework.decorators import action,permission_classes
+from django.shortcuts import get_object_or_404
+from rest_framework_simplejwt.authentication import JWTAuthentication
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+    # --- Custom Action ---
+    @action(detail=True, methods=['put'], url_path='status')
+    def update_status(self, request, pk=None):
+        product = get_object_or_404(Product, pk=pk)
+        status_value = request.data.get('status')
+
+        if status_value not in ['available', 'unavailable']:
+            return Response({'error': 'Trạng thái không hợp lệ.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        product.status = status_value
+        product.save()
+        return Response(ProductSerializer(product).data, status=status.HTTP_200_OK)
+
+class ImageViewSet(viewsets.ViewSet):
+    permission_classes = [IsAdminOrReadOnly]
+
+    def list(self, request, product_pk=None):
+        images = Image.objects.filter(product_id=product_pk)
+        serializer = ImageSerializer(images, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def retrieve(self, request, pk=None, product_pk=None):
+        try:
+            image = get_object_or_404(Image, pk=pk, product=product_pk)
+            serializer = ImageSerializer(image)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Image.DoesNotExist:
+            return Response({'error': 'Không tìm thấy hình ảnh.'}, status=status.HTTP_404_NOT_FOUND)
+    def create(self, request, product_pk=None):
+        product = Product.objects.get(pk=product_pk)
+        serializer = ImageSerializer(data=request.data, context={'product': product})
+        if serializer.is_valid():
+            image = serializer.save()
+            return Response(ImageSerializer(image).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def update(self, request, pk=None, product_pk=None):
+        try:
+            image = Image.objects.get(pk=pk, product=product_pk)
+            serializer = ImageSerializer(image, data=request.data, partial=True)
+            if serializer.is_valid():
+                image = serializer.save()
+                return Response(ImageSerializer(image).data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Image.DoesNotExist:
+            return Response({'error': 'Không tìm thấy hình ảnh.'}, status=status.HTTP_404_NOT_FOUND)
+    def destroy(self, request, pk=None, product_pk=None):
+        try:
+            image = Image.objects.get(pk=pk, product=product_pk)
+            image.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Image.DoesNotExist:
+            return Response({'error': 'Không tìm thấy hình ảnh.'}, status=status.HTTP_404_NOT_FOUND)

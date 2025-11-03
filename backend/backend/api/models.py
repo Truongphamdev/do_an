@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
+from cloudinary.models import CloudinaryField
 class User(AbstractUser):
     phone = models.CharField(max_length=15, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
@@ -32,7 +32,7 @@ class Product(models.Model):
     status = models.CharField(max_length=20, choices=(
         ('available', 'Available'),
         ('unavailable', 'Unavailable'),
-    ))
+    ),default='available')
     category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -123,10 +123,12 @@ class OrderItem(models.Model):
 # Image MODEL
 class Image(models.Model):
     product = models.ForeignKey(Product, related_name='images', on_delete=models.CASCADE)
-    image_url = models.URLField()
+    image = CloudinaryField('image', blank=True, null=True)
+    is_primary = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    
+    objects = models.Manager()
     def __str__(self):
         return f"Image for {self.product.name}"
 
