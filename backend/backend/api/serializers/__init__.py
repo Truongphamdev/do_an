@@ -1,1 +1,3 @@
 from api.serializers.auth.register_serializer import RegisterSerializer,LoginSerializer
+from api.serializers.admin.category_serializer import CategorySerializer
+from api.serializers.admin.product_serializer import ProductSerializer,ImageSerializer
