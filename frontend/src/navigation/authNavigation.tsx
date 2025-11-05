@@ -1,5 +1,4 @@
 import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator, NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import Login from "../screens/auth/login";
@@ -16,12 +15,10 @@ const Stack = createNativeStackNavigator<AuthStackParamList>();
 
 export const AuthNavigator = () => {
     return (
-        <NavigationContainer>
-            <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false, animation: 'fade' }}>
-                <Stack.Screen name="Login" component={Login} options={{ headerShown: false}} />
-                <Stack.Screen name="Register" component={Register} options={{ headerShown: false}} />
-            </Stack.Navigator>
-        </NavigationContainer>
+        <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false, animation: 'fade' }}>
+            <Stack.Screen name="Login" component={Login} options={{ headerShown: false}} />
+            <Stack.Screen name="Register" component={Register} options={{ headerShown: false}} />
+        </Stack.Navigator>
     );
 }
 
