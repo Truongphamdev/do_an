@@ -16,9 +16,9 @@ class CategorySerializer(serializers.ModelSerializer):
         if query.exists():
             raise serializers.ValidationError("Tên danh mục đã tồn tại.")
         return value
-    def update(self,instance,validate_data):
-        instance.name = validate_data.get('name',instance.name)
-        instance.description = validate_data.get('description',instance.description)
+    def update(self,instance,validated_data):
+        instance.name = validated_data.get('name',instance.name)
+        instance.description = validated_data.get('description',instance.description)
         instance.save()
         return instance
     
