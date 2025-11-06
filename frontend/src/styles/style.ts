@@ -5,18 +5,9 @@ export const globalStyles = StyleSheet.create({
     // Đăng nhập
     container_login_register: {
         flex: 1,
-        backgroundColor: theme.color.primary,
-    },
-    background_login_register: {
-        flex: 1,
-        alignItems: "center",
-        paddingTop: 150,
         backgroundColor: '#fff',
-        width: "100%",
-        height: "100%",
-        borderRadius: 40,
-        position: 'absolute',
-        top: 100,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     title_login_register: {
         marginBottom: 16,
@@ -35,9 +26,15 @@ export const globalStyles = StyleSheet.create({
         fontWeight: 'bold',
     },
 
+    //Style appDropdown
+    app_dropdown: {
+        width: '80%',
+        marginBottom: 16,
+    },
+
     // Style input chung
     container_input: {
-        width: "80%",
+        width: '80%',
     },
     input_global: {
         height: 48,

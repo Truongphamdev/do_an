@@ -6,14 +6,24 @@
  */
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AuthNavigator } from './src/navigation/authNavigation';
-import AdminTabBottoms from './src/navigation/adminNavigation';
+import { PaperProvider } from 'react-native-paper';
+import RootNavigator from './src/navigation/rootNavigator';
+import FlashMessage from 'react-native-flash-message';
+import { NotificationProvider } from './src/providers/notificationProvider';
+import { AuthProvider } from './src/providers/authProvider';
 
 function App() {
 
   return (
     <SafeAreaProvider>
-      <AdminTabBottoms/>
+      <PaperProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <RootNavigator/>
+            <FlashMessage position="top"/>
+          </NotificationProvider>
+        </AuthProvider>
+      </PaperProvider>
     </SafeAreaProvider>
   );
 }
