@@ -59,6 +59,7 @@ class Table(models.Model):
 class Reservation(models.Model):
     table = models.ForeignKey(Table, related_name='reservations', on_delete=models.CASCADE)
     customer = models.ForeignKey(User, related_name='reservations', on_delete=models.CASCADE)
+    customer_name = models.CharField(max_length=100, blank=True, null=True)
     customer_contact = models.CharField(max_length=15)
     reservation_time = models.DateTimeField()
     number_of_people = models.IntegerField()
@@ -81,8 +82,7 @@ class CartItem(models.Model):
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    class Meta:
-        unique_together = ('table', 'product')
+
     def __str__(self):
         return f"CartItem for {self.product.name}"
 
@@ -95,16 +95,12 @@ class Order(models.Model):
         ('preparing', 'Preparing'),
         ('served', 'Served'),
         ('paid', 'Paid'),
-    ), default='pending')
+    ), default='preparing')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     @property
     def calculated_total(self):
         return sum(item.price * item.quantity for item in self.order_items.all())
-    def save(self, *args, **kwargs):
-        self.total_amount = self.calculated_total
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return f"Order {self.id} for Table {self.table.number}"
 # ORDERITEM MODEL
@@ -117,7 +113,7 @@ class OrderItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     class Meta:
-        unique_together = ('order', 'product')
+        unique_together = ('order', 'product', 'description')
     def __str__(self):
         return f"OrderItem for {self.product.name} in Order {self.order.id}"
 # Image MODEL

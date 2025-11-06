@@ -1,3 +1,9 @@
 from .auth.auth_view import RegisterView, LoginView
-from .admin.category import CreateCategoryViewSet
-from .admin.product import ProductViewSet,ImageViewSet
+from .category.category import CreateCategoryViewSet
+from .product.product import ProductViewSet,ImageViewSet
+from .table.table import TableViewSet
+from .reservation.reservation import ReservationViewSet
+from .admin.reservation import ReservationAdminViewSet
+from .cart.cart import CartItemViewSet
+from .order.order import OrderViewSet
+from .admin.order import AdminOrderViewSet
