@@ -10,7 +10,8 @@ from .view import (
     ReservationAdminViewSet,
     CartItemViewSet,
     OrderViewSet,
-    AdminOrderViewSet
+    AdminOrderViewSet,
+    OrderCashierViewSet
 
 )
 from .view.product.product import ProductViewSet
@@ -30,7 +31,12 @@ urlpatterns = [
     path('login', LoginView.as_view(), name='login'),
     path('register', RegisterView.as_view(), name='register'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
+    # CASHIER
+    # order
+    # switch order
+    path('cashier/switchorder/<int:pk>',OrderCashierViewSet.as_view({'put':'switch_table'}),name='switch-order'),
+    # seperate order
+    path('cashier/seperateorder/<int:pk>',OrderCashierViewSet.as_view({'put':'separate_table'}),name='separate-order'),
     # Categories (dùng ViewSet)
     path('categories', CreateCategoryViewSet.as_view({'get': 'list', 'post': 'create'}), name='category-list'),
     path('categories/<int:pk>', CreateCategoryViewSet.as_view({'put': 'update', 'delete': 'destroy'}), name='category-detail'),

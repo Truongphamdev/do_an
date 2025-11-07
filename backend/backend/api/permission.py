@@ -9,3 +9,6 @@ class IsAdminOrReadOnly(BasePermission):
 class IsAdminUser(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and getattr(request.user, 'role', None) == 'admin'
+class IsCashierUser(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and getattr(request.user,'role',None) == 'cashier'
