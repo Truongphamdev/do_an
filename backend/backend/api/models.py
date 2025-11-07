@@ -98,9 +98,6 @@ class Order(models.Model):
     ), default='preparing')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    @property
-    def calculated_total(self):
-        return sum(item.price * item.quantity for item in self.order_items.all())
     def __str__(self):
         return f"Order {self.id} for Table {self.table.number}"
 # ORDERITEM MODEL
@@ -127,7 +124,28 @@ class Image(models.Model):
     objects = models.Manager()
     def __str__(self):
         return f"Image for {self.product.name}"
+# INVOICE MODEL
+class Invoice(models.Model):
+    order = models.ForeignKey(Order,related_name="invoices",on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10,decimal_places=2)
+    method = models.CharField(max_length=20,choices=(
+        ('cash','Cash'),
+        ('credit_card','Credit Card'),
+        ('mobile_payment','Mobile Payment')
+    ),default="cash")
+    status = models.CharField(max_length=20,choices=(
+        ("paid", "Paid"),
+        ("unpaid", "Unpaid"),
+        ("partially_paid", "Partially Paid"),
+        ("canceled", "Canceled"),
+    ),default="unpaid"),
+    invoice_date = models.DateTimeField(auto_now_add=True),
+    invoice_number = models.CharField(max_length=100,blank=True,null=True,unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return f"InvoicePurchase {self.id} - {self.amount}"
 # PAYMENT MODEL
 class Payment(models.Model):
     order = models.ForeignKey(Order, related_name='payments', on_delete=models.CASCADE)
