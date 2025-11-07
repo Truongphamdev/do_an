@@ -30,7 +30,7 @@ export const AppDropdown = ({ name, control, options, label }: AppDropdownProps)
             valueField="value"
             placeholder={label}
             value={value}
-            onChange={(item) => onChange(item.value)} // ✅ truyền giá trị thật cho react-hook-form
+            onChange={(item) => onChange(item.value)}
             maxHeight={300}
             selectedTextStyle={styles.selectedTextStyle}
             placeholderStyle={styles.placeholderStyle}

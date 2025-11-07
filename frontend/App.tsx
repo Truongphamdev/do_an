@@ -5,6 +5,7 @@
  * @format
  */
 
+import 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PaperProvider } from 'react-native-paper';
 import RootNavigator from './src/navigation/rootNavigator';

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import AuthNavigator from "./authNavigation";
-import AdminTabBottoms from "./adminNavigation";
+import { AdminDrawerNavigator } from "./adminDrawerNavigator";
 import { useAuth } from "../providers/authProvider";
 
 const RootNavigator = () => {
@@ -21,7 +21,7 @@ const RootNavigator = () => {
     return (
         <NavigationContainer>
             {user ?(
-                user.role === "admin" ? <AdminTabBottoms/> : <AuthNavigator/>
+                user.role === "admin" ? <AdminDrawerNavigator/> : <AuthNavigator/>
             ) : (
                 <AuthNavigator/>
             )}

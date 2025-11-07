@@ -23,7 +23,29 @@ const AdminHeader = ({title, showMenuOptions, showAdd, showSearch, showFilter, s
 
     return (
         <View>
-            <Text>AdminHeader</Text>
+            {showMenuOptions && (
+                <TouchableOpacity onPress={onMenuOptions}>
+                    <Icon name='bars' size={24} color="#707070" />
+                </TouchableOpacity>
+            )}
+
+            {showAdd && (
+                <TouchableOpacity>
+                    <Icon name='bars' size={24} color="#707070" />
+                </TouchableOpacity>
+            )}
+
+            {showSearch && (
+                <TouchableOpacity>
+                    <Icon name='bars' size={24} color="#707070" />
+                </TouchableOpacity>
+            )}
+
+            {showProfile && (
+                <TouchableOpacity>
+                    <Icon name='bars' size={24} color="#707070" />
+                </TouchableOpacity>
+            )}
         </View>
     )
 }
