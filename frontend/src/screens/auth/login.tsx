@@ -1,6 +1,6 @@
-import { Text, View } from 'react-native'
+import { Text, View, StyleSheet } from 'react-native'
 import React, { useState} from 'react'
-import { globalStyles } from '../../styles/style'
+import { theme } from '../../styles/theme'
 import { AppButton, AppInput, AppTextLink } from '../../components'
 import { AuthNav } from '../../navigation/authNavigation'
 import { useNavigation } from '@react-navigation/native'
@@ -12,8 +12,12 @@ import { authApi } from '../../api/auth'
 import { useAuth } from '../../providers/authProvider'
 
 const Login = () => {
-  const { control, handleSubmit, formState: { errors } } = useForm<LoginForm>({
+  const { control, handleSubmit, formState: { errors }, setError } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
   
   const { success, error } = useNotify();
@@ -35,15 +39,25 @@ const Login = () => {
 
     } catch (err: any) {
       // Thông báo lỗi
-      error(err.response?.data?.message || "Đăng nhập thất bại!");
+      console.log("❌ Lỗi API:", err.response?.data);
+      const data = err.response?.data;
+
+      if (data?.email?.[0]) setError("email", { message: data.email[0] });
+      if (data?.password?.[0]) setError("password", { message: data.password[0] });
+      if (data?.non_field_errors?.[0]) {
+        const msg = data.non_field_errors[0];
+        if (msg.toLowerCase().includes("email")) setError("email", { message: msg });
+        else setError("password", { message: msg });
+      }
+      else if (data?.message) error(data.message);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <View style={globalStyles.container_login_register}>
-      <Text style={globalStyles.title_login_register}>Đăng nhập</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Đăng nhập</Text>
       <AppInput
         name='email'
         control={control}
@@ -60,7 +74,7 @@ const Login = () => {
         error={errors.password?.message}
       />
       <AppButton title={loading ? "Đang đăng nhập" : "Đăng nhập"} onPress={handleSubmit(handleLogin)} style={undefined} textStyle={undefined}/>
-      <View style={globalStyles.question_login_register}>
+      <View style={styles.question}>
         <Text>Bạn chưa có tài khoản?</Text>
         <AppTextLink title="Đăng ký" onPress={() => navigation.navigate('Register')} />
       </View>
@@ -69,3 +83,22 @@ const Login = () => {
 }
 
 export default Login
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+      marginBottom: 16,
+      fontSize: 48,
+      fontWeight: "900",
+      color: theme.color.primary,
+  },
+  question: {
+      flexDirection: 'row',
+      gap: 8,
+  },
+});
