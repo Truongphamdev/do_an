@@ -1,8 +1,7 @@
 import React, { useState } from "react"
-import { TextInput, View, TouchableOpacity, TextInputProps } from "react-native"
+import { TextInput, View, TouchableOpacity, TextInputProps, StyleSheet } from "react-native"
 import Ionicons from "react-native-vector-icons/Ionicons"
 import { Control, Controller } from "react-hook-form"
-import { globalStyles } from "../styles/style"
 import { Text } from "@react-navigation/elements"
 
 interface Props extends TextInputProps {
@@ -18,7 +17,7 @@ export const AppInput = ({ style, containerStyle, name, control, error, secureTe
     const [ isPasswordVisible, setIsPasswordVisible ] = useState(false);
 
     return(
-        <View style={[globalStyles.container_input, {position: "relative"}]}>
+        <View style={[styles.containerInput, {position: "relative"}]}>
             {/* Hiển thị lỗi validation */}
             {error && (
                 <Text style={{ color: "red", fontSize: 12 }}>{error}</Text>
@@ -34,7 +33,7 @@ export const AppInput = ({ style, containerStyle, name, control, error, secureTe
                             onChangeText={onChange}
                             onBlur={onBlur}
                             secureTextEntry={secureTextEntry && !isPasswordVisible}
-                            style={[globalStyles.input_global, style, secureTextEntry && { paddingRight: 40 }]}
+                            style={[styles.input, style, secureTextEntry && { paddingRight: 40 }]}
                         />
 
                         {/* icon ẩn/hiện mật khẩu */}
@@ -49,3 +48,18 @@ export const AppInput = ({ style, containerStyle, name, control, error, secureTe
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+    containerInput: {
+        width: '80%',
+    },
+    input: {
+        height: 48,
+        borderWidth: 1,
+        borderColor: "#707070",
+        borderRadius: 8,
+        marginBottom: 16,
+        paddingHorizontal: 16,
+        fontSize: 16,
+    },
+})

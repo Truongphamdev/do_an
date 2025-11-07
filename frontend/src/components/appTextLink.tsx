@@ -1,6 +1,5 @@
 import React from "react";
-import { Pressable, Text } from "react-native";
-import { globalStyles } from "../styles/style";
+import { Pressable, Text, StyleSheet } from "react-native";
 
 /**
  * AppTextLink - Component hiển thị text có thể nhấn
@@ -22,7 +21,7 @@ export const AppTextLink = ({ title, onPress, style, underline = false}: AppText
     return (
         <Pressable onPress={onPress}>
             {({ pressed }) => (
-                <Text style={[globalStyles.navigation_text, { textDecorationLine: underline ? 'underline' : 'none', opacity: pressed ? 0.6 : 1, }, style]}>
+                <Text style={[styles.textNavigation, { textDecorationLine: underline ? 'underline' : 'none', opacity: pressed ? 0.6 : 1, }, style]}>
                     {title}
                 </Text>
             )}
@@ -31,3 +30,10 @@ export const AppTextLink = ({ title, onPress, style, underline = false}: AppText
 }
 
 export default AppTextLink
+
+const styles = StyleSheet.create({
+  textNavigation: {
+      color: '#330066',
+      fontWeight: 'bold',
+  },
+})

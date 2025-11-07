@@ -20,43 +20,4 @@ export const globalStyles = StyleSheet.create({
         gap: 8,
     },
 
-    //Style navigation text chung
-    navigation_text: {
-        color: '#330066',
-        fontWeight: 'bold',
-    },
-
-    //Style appDropdown
-    app_dropdown: {
-        width: '80%',
-        marginBottom: 16,
-    },
-
-    // Style input chung
-    container_input: {
-        width: '80%',
-    },
-    input_global: {
-        height: 48,
-        borderWidth: 1,
-        borderColor: "#707070ff",
-        borderRadius: 8,
-        marginBottom: 16,
-        paddingHorizontal: 16,
-        fontSize: 16,
-    },
-
-    // Style button chung
-    button_global: {
-        backgroundColor: theme.color.primary,
-        paddingHorizontal: 32,
-        paddingVertical: 12,
-        borderRadius: 8,
-        marginBottom: 8,
-    },
-    button_text_global: {
-        fontSize: 16,
-        color: '#fff',
-        fontWeight: '900',
-    },
 })

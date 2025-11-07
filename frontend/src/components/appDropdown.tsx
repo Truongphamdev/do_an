@@ -1,8 +1,7 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Controller, Control } from "react-hook-form";
 import { Dropdown } from "react-native-element-dropdown";
-import { globalStyles } from "../styles/style";
 
 interface Option {
   label: string;
@@ -14,36 +13,45 @@ interface AppDropdownProps {
   control: Control<any>;
   options: Option[];
   label: string;
+  error?: string;
 }
 
-export const AppDropdown = ({ name, control, options, label }: AppDropdownProps) => {
+export const AppDropdown = ({ name, control, options, label, error }: AppDropdownProps) => {
   return (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field: { onChange, value } }) => (
-        <View style={globalStyles.app_dropdown}>
-          <Dropdown
-            style={styles.dropdown}
-            data={options}
-            labelField="label"
-            valueField="value"
-            placeholder={label}
-            value={value}
-            onChange={(item) => onChange(item.value)} // ✅ truyền giá trị thật cho react-hook-form
-            maxHeight={300}
-            selectedTextStyle={styles.selectedTextStyle}
-            placeholderStyle={styles.placeholderStyle}
-            itemTextStyle={styles.itemTextStyle}
-            containerStyle={styles.containerStyle}
-          />
-        </View>
+    <View style={styles.container}>
+      {error && (
+        <Text style={{ color: "red", fontSize: 12 }}>{error}</Text>
       )}
-    />
+      <Controller
+        name={name}
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <View>
+            <Dropdown
+              style={styles.dropdown}
+              data={options}
+              labelField="label"
+              valueField="value"
+              placeholder={label}
+              value={value}
+              onChange={(item) => onChange(item.value)}
+              maxHeight={300}
+              selectedTextStyle={styles.selectedText}
+              placeholderStyle={styles.placeholder}
+              itemTextStyle={styles.itemText}
+            />
+          </View>
+        )}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    width: '80%',
+    marginBottom: 16,
+  },
   dropdown: {
     height: 50,
     borderColor: "#aaa",
@@ -52,19 +60,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     backgroundColor: "white",
   },
-  selectedTextStyle: {
+  selectedText: {
     fontSize: 16,
     color: "#000",
   },
-  placeholderStyle: {
+  placeholder: {
     fontSize: 16,
-    color: "#888",
+    color: "#707070",
   },
-  itemTextStyle: {
+  itemText: {
     fontSize: 16,
     color: "#000",
-  },
-  containerStyle: {
-    borderRadius: 8,
   },
 });
