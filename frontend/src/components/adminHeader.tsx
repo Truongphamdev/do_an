@@ -1,4 +1,4 @@
-import { TouchableOpacity, Text, View } from 'react-native'
+import { TouchableOpacity, Text, View, StyleSheet } from 'react-native'
 import React from 'react'
 import Icon from "react-native-vector-icons/FontAwesome5"
 import { theme } from '../styles/theme'
@@ -22,11 +22,17 @@ interface AdminHeaderProps {
 const AdminHeader = ({title, showMenuOptions, showAdd, showSearch, showFilter, showBell, showProfile, onAddPress, onMenuOptions, onSearchPress, onFilterPress, onBellPress, onProfilePress}: AdminHeaderProps) => {
 
     return (
-        <View>
-            {showMenuOptions && (
-                <TouchableOpacity onPress={onMenuOptions}>
-                    <Icon name='bars' size={24} color="#707070" />
-                </TouchableOpacity>
+        <View style={styles.container}>
+            <View style={styles.sideMenuDrawer}>
+                {showMenuOptions && (
+                    <TouchableOpacity onPress={onMenuOptions}>
+                        <Icon name='bars' size={24} color="#707070" />
+                    </TouchableOpacity>
+                )}
+            </View>
+
+            {title && (
+                <Text style={styles.title}>{title}</Text>
             )}
 
             {showAdd && (
@@ -51,3 +57,22 @@ const AdminHeader = ({title, showMenuOptions, showAdd, showSearch, showFilter, s
 }
 
 export default AdminHeader
+
+const styles = StyleSheet.create({
+    container: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+    },
+    sideMenuDrawer: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: "bold",
+        color: theme.color.primary,
+        marginLeft: 120,
+    },
+})
