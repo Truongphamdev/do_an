@@ -31,7 +31,7 @@ const Login = () => {
       setLoading(true);
       const response = await authApi.login(data);
 
-      const { user, access, refresh } = response.data;
+      const { user, access, refresh } = response;
       // Thông báo
       success("Đăng nhập thành công!");
       // gọi AuthContext để xử lý
@@ -73,7 +73,7 @@ const Login = () => {
         secureTextEntry={true}
         error={errors.password?.message}
       />
-      <AppButton title={loading ? "Đang đăng nhập" : "Đăng nhập"} onPress={handleSubmit(handleLogin)} style={undefined} textStyle={undefined}/>
+      <AppButton title={loading ? "Đang đăng nhập" : "Đăng nhập"} onPress={handleSubmit(handleLogin)}/>
       <View style={styles.question}>
         <Text>Bạn chưa có tài khoản?</Text>
         <AppTextLink title="Đăng ký" onPress={() => navigation.navigate('Register')} />
