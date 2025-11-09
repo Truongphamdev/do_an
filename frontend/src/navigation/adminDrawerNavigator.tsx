@@ -1,4 +1,5 @@
 import React from "react";
+import { StyleSheet, View } from "react-native";
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import AdminTabBottoms from "./adminNavigation";
@@ -30,13 +31,20 @@ function CustomDrawerContent({ navigation}: any) {
     };
 
     return (
-        <DrawerContentScrollView>
-            <DrawerItem
-                label='Đăng xuất'
-                icon={() => <Icon name="sign-out-alt" size={16} color='#707070' />}
-                onPress={handleLogout}
-            />
-        </DrawerContentScrollView>
+        <View style={styles.container}>
+            <DrawerContentScrollView>
+                <DrawerItem label="Trang chủ" onPress={() => {}} />
+                <DrawerItem label="Quản lý user" onPress={() => {}} />
+            </DrawerContentScrollView>
+
+            <View style={styles.bottomMenu}>
+                <DrawerItem
+                    label='Đăng xuất'
+                    icon={() => <Icon name="sign-out-alt" size={16} color='#707070' />}
+                    onPress={handleLogout}
+                />
+            </View>
+        </View>
     );
 }
 
@@ -55,3 +63,15 @@ export const AdminDrawerNavigator = () => {
         </Drawer.Navigator>
     )
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        padding: 16,
+    },
+    bottomMenu: {
+        marginTop: "auto",
+        borderTopWidth: 1,
+        borderTopColor: "#707070",
+    }
+})
