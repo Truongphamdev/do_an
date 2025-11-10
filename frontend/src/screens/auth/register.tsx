@@ -99,7 +99,7 @@ const Register = () => {
         label='Chọn vai trò'
         error={errors.role?.message}
       />
-      <AppButton title={loading ? "Đang đăng ký" : "Đăng ký"} onPress={handleSubmit(handleRegister)} style={undefined} textStyle={undefined}/>
+      <AppButton title={loading ? "Đang đăng ký" : "Đăng ký"} onPress={handleSubmit(handleRegister)}/>
       <View style={styles.question}>
         <Text>Bạn đã có tài khoản?</Text>
         <AppTextLink title="Đăng nhập" onPress={() => navigation.navigate('Login')} />

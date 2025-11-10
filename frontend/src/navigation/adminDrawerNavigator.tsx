@@ -33,8 +33,8 @@ function CustomDrawerContent({ navigation}: any) {
     return (
         <View style={styles.container}>
             <DrawerContentScrollView>
-                <DrawerItem label="Trang chủ" onPress={() => {}} />
-                <DrawerItem label="Quản lý user" onPress={() => {}} />
+                <DrawerItem label="Trang chủ" labelStyle={styles.label} onPress={() => {}} />
+                <DrawerItem label="Quản lý user" labelStyle={styles.label} onPress={() => {}} />
             </DrawerContentScrollView>
 
             <View style={styles.bottomMenu}>
@@ -42,6 +42,7 @@ function CustomDrawerContent({ navigation}: any) {
                     label='Đăng xuất'
                     icon={() => <Icon name="sign-out-alt" size={16} color='#707070' />}
                     onPress={handleLogout}
+                    labelStyle={styles.label}
                 />
             </View>
         </View>
@@ -73,5 +74,8 @@ const styles = StyleSheet.create({
         marginTop: "auto",
         borderTopWidth: 1,
         borderTopColor: "#707070",
-    }
+    },
+    label: {
+        fontSize: 16,
+    },
 })
