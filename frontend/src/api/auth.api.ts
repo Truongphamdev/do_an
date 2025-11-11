@@ -28,18 +28,18 @@ export interface AuthResponse {
 }
 
 export const authApi = {
-    register: async (data: Register): Promise<AuthResponse> => {
-        const { data: response } = await api.post<AuthResponse>("/register", data);
+    async register(payload: Register): Promise<AuthResponse> {
+        const { data: response } = await api.post<AuthResponse>("/register", payload);
         return response;
     },
 
-    login: async (data: Login): Promise<AuthResponse> => {
-        const { data: response } = await api.post<AuthResponse>("/login", data);
+    async login(payload: Login): Promise<AuthResponse> {
+        const { data: response } = await api.post<AuthResponse>("/login", payload);
         return response;
     },
 
-    refreshToken: async (data: { refresh: string }): Promise<{ access: string}> => {
-        const { data: response } = await api.post<{ access: string}>("/token/refresh/", data);
-        return response;
+    async refreshToken(refresh: string): Promise<{ access: string }> {
+        const { data: newToken } = await api.post<{ access: string }>("/token/refresh/", {refresh});
+        return newToken;
     },
 };

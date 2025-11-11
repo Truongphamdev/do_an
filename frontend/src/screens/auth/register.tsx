@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { registerSchema, type registerForm } from '../../validation/authValidation'
 import { useNotify } from '../../providers/notificationProvider'
-import { authApi } from '../../api/auth'
+import { authApi } from '../../api/auth.api'
 
 const Register = () => {
   const { control, handleSubmit, formState: { errors }, setError } = useForm<registerForm>({

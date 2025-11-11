@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { authApi } from "./auth";
+import { authApi } from "./auth.api";
 
 // Queue để lưu các request khi đang refresh token
 interface QueueItem {
@@ -70,8 +70,8 @@ api.interceptors.response.use(
                 const refresh = await AsyncStorage.getItem("refresh_token");
                 if (!refresh) throw new Error("No refresh token");
 
-                const response = await authApi.refreshToken({ refresh });
-                const newAccess = response.data.access;
+                const response = await authApi.refreshToken(refresh);
+                const newAccess = response.access;
 
                 // Lưu token mới và set header mặc định
                 await AsyncStorage.setItem("access_token", newAccess);
