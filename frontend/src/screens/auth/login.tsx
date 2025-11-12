@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema, type LoginForm } from '../../validation/authValidation'
 import { useNotify } from '../../providers/notificationProvider'
-import { authApi } from '../../api/auth'
+import { authApi } from '../../api/auth.api'
 import { useAuth } from '../../providers/authProvider'
 
 const Login = () => {
