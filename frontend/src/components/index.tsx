@@ -1,5 +1,5 @@
 export * from './button'
 export * from './input'
-export * from './appTextLink'
-export * from './appDropdown'
+export * from './textLink'
+export * from './dropdown'
 export * from './adminHeader'

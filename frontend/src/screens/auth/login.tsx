@@ -57,26 +57,28 @@ const Login = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Đăng nhập</Text>
-      <AppInput
-        name='email'
-        control={control}
-        placeholder='Email'
-        keyboardType="email-address"
-        autoCapitalize="none"
-        error={errors.email?.message}
-      />
-      <AppInput
-        name='password'
-        control={control}
-        placeholder='Mật khẩu'
-        secureTextEntry={true}
-        error={errors.password?.message}
-      />
-      <AppButton title={loading ? "Đang đăng nhập" : "Đăng nhập"} onPress={handleSubmit(handleLogin)}/>
-      <View style={styles.question}>
-        <Text>Bạn chưa có tài khoản?</Text>
-        <AppTextLink title="Đăng ký" onPress={() => navigation.navigate('Register')} />
+      <View style={styles.loginBox}>
+        <Text style={styles.title}>Đăng nhập</Text>
+        <AppInput
+          name='email'
+          control={control}
+          placeholder='Email'
+          keyboardType="email-address"
+          autoCapitalize="none"
+          error={errors.email?.message}
+        />
+        <AppInput
+          name='password'
+          control={control}
+          placeholder='Mật khẩu'
+          secureTextEntry={true}
+          error={errors.password?.message}
+        />
+        <AppButton title={loading ? "Đang đăng nhập" : "Đăng nhập"} onPress={handleSubmit(handleLogin)} style={styles.loginButton}/>
+        <View style={styles.question}>
+          <Text>Bạn chưa có tài khoản?</Text>
+          <AppTextLink title="Đăng ký" onPress={() => navigation.navigate('Register')} />
+        </View>
       </View>
     </View>
   )
@@ -87,15 +89,28 @@ export default Login
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#AFE5E5',
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 20,
+  },
+  loginBox: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: "#fff",
+    width: "100%",
+    borderRadius: 10,
+    elevation: 5,
   },
   title: {
       marginBottom: 16,
       fontSize: 48,
       fontWeight: "900",
-      color: theme.color.primary,
+      color: "#1ABDBE",
+  },
+  loginButton: {
+    backgroundColor: "#1ABDBE",
   },
   question: {
       flexDirection: 'row',

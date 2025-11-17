@@ -3,7 +3,7 @@ import React from 'react'
 import AdminHeader from '../../components/adminHeader'
 import { useNavigation } from '@react-navigation/native'
 import type { DrawerNavigationProp } from '@react-navigation/drawer'
-import { AdminDrawerParamList } from '../../navigation/adminDrawerNavigator'
+import { AdminDrawerParamList } from '../../navigation/adminDrawerNavigation'
 
 type DrawerNav = DrawerNavigationProp<AdminDrawerParamList>;
 
@@ -16,7 +16,7 @@ const AdminDashboard = () => {
         title='Dashboard'
         showMenuOptions
         onMenuOptions={() => {
-          navigation.getParent<DrawerNavigationProp<AdminDrawerParamList>>()?.toggleDrawer();
+          navigation.toggleDrawer();
         }}
       />
     </View>

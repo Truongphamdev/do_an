@@ -12,7 +12,7 @@ import { View } from "react-native"
 
 const Tab = createBottomTabNavigator();
 
-export const AdminTabBottoms = () => {
+export const AdminTabBottom = () => {
     return (
         <Tab.Navigator
             screenOptions={({route}) => ({
@@ -62,4 +62,4 @@ export const AdminTabBottoms = () => {
     )
 }
 
-export default AdminTabBottoms
+export default AdminTabBottom
