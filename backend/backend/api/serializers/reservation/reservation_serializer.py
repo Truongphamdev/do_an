@@ -37,10 +37,13 @@ class ReservationSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         number_of_people = attrs.get('number_of_people')
         table = attrs.get('table')
+        reservation_time = attrs.get('reservation_time')
         if number_of_people <=0:
             raise serializers.ValidationError("Số người phải là số nguyên dương.")
         if table.capacity < number_of_people:
             raise serializers.ValidationError("Số người vượt quá sức chứa của bàn.")
+        if Reservation.objects.filter(table=table,reservation_time__date = reservation_time.date(),status = "confirmed").exists():
+            raise serializers.ValidationError("Bàn này đã được đặt vào thời gian này.")
         return attrs
     def create(self, validated_data):
         request = self.context.get('request')
@@ -48,6 +51,9 @@ class ReservationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Bạn phải đăng nhập để đặt bàn.")
         customer = request.user
         validated_data['customer'] = customer
+        table = validated_data['table']
+        table.status = "reserved"
+        table.save()
         return super().create(validated_data)
     def update(self, instance, validated_data):
         request = self.context.get('request')
