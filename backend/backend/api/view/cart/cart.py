@@ -40,7 +40,11 @@ class CartItemViewSet(viewsets.ViewSet):
     @action(detail=True,methods=['delete'])
     def remove_cart_item(self,request,pk=None):
         cart_item = get_object_or_404(CartItem,pk=pk)
+        table = cart_item.table
         cart_item.delete()
+        if not CartItem.objects.filter(table=table).exists():
+            table.status="available"
+            table.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
         
 

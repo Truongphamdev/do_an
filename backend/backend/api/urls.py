@@ -36,7 +36,7 @@ urlpatterns = [
     # switch order
     path('cashier/switchorder/<int:pk>',OrderCashierViewSet.as_view({'put':'switch_table'}),name='switch-order'),
     # seperate order
-    path('cashier/seperateorder/<int:pk>',OrderCashierViewSet.as_view({'put':'separate_table'}),name='separate-order'),
+    path('cashier/seperateorder/',OrderCashierViewSet.as_view({'put':'separate_table'}),name='separate-order'),
     # Categories (dùng ViewSet)
     path('categories', CreateCategoryViewSet.as_view({'get': 'list', 'post': 'create'}), name='category-list'),
     path('categories/<int:pk>', CreateCategoryViewSet.as_view({'put': 'update', 'delete': 'destroy'}), name='category-detail'),

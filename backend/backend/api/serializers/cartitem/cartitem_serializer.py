@@ -20,8 +20,6 @@ class CartItemSerializer(serializers.ModelSerializer):
         table = Table.objects.filter(id=value.id).first()
         if not table:
             raise serializers.ValidationError("Bàn không tồn tại.")
-        if table.status != 'available':
-            raise serializers.ValidationError("Bàn không khả dụng để thêm món.")
         return value
     def validate_quantity(self,value):
         if value <= 0:
@@ -34,6 +32,9 @@ class CartItemSerializer(serializers.ModelSerializer):
         product = validated_data['product']
         quantity = validated_data.get('quantity', 1)
         description = validated_data.get('description', '')
+        if product.status != "available":
+            raise serializers.ValidationError("Sản phẩm này hiện không còn khả dụng.")
+
 
         cart_item, created = CartItem.objects.get_or_create(
             table=table,
@@ -46,16 +47,27 @@ class CartItemSerializer(serializers.ModelSerializer):
         else:
             cart_item.quantity +=quantity
             cart_item.description = description
+        if table.status in ["available","reserved"]:
+            table.status = "occupied"
+            table.save(update_fields=['status'])
         cart_item.save()
         return cart_item
 
     def update(self, instance, validated_data):
         quantity = validated_data.get('quantity',instance.quantity)
         description = validated_data.get('description',instance.description)
-        instance.quantity = quantity
-        instance.description = description
-        instance.save()
-        return instance
+        if quantity <= 0:
+            table = instance.table
+            instance.delete()
+            if not CartItem.objects.filter(table=table).exists():
+                table.status = "available"
+                table.save(update_fields=['status'])
+            return None
+        else:
+            instance.quantity = quantity
+            instance.description = description
+            instance.save()
+            return instance
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['product'] = ProductSerializer(instance.product).data

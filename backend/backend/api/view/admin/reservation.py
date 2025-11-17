@@ -19,7 +19,7 @@ class ReservationAdminViewSet(viewsets.ModelViewSet):
         try:
             reservation = Reservation.objects.get(pk=pk)
             table = Table.objects.get(pk=reservation.table.id)
-            table.status = 'reserved'
+            table.status = 'occupied'
             table.save()
             reservation.status = 'confirmed'
             reservation.save()
@@ -30,6 +30,9 @@ class ReservationAdminViewSet(viewsets.ModelViewSet):
     def cancel_reservation(self,request,pk=None):
         try:
             reservation = Reservation.objects.get(pk=pk)
+            table = Table.objects.get(pk=reservation.table.id)
+            table.status = "available"
+            table.save()
             reservation.status = 'cancelled'
             reservation.save()
             return Response({'message': 'Đặt chỗ đã được hủy bởi quản trị viên.'}, status=status.HTTP_200_OK)
