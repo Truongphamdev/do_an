@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from api.permission import IsAdminOrReadOnly
-from api.models import Product, Image
+from api.models import Product, Image, Category
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework import status
@@ -13,6 +13,20 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [IsAdminOrReadOnly]
 
+    @action(detail=False, methods=['get'], url_path='product_filter')
+    def get_product_by_category(self, request):
+        category_id = request.query_params.get('category_id')
+        if not category_id:
+            return Response({'error': 'Thiếu category_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+        category = get_object_or_404(Category, pk=category_id)
+        products = Product.objects.filter(category=category)
+
+        if not products.exists():
+            return Response({'error': 'Không có sản phẩm nào trong danh mục này'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     # --- Custom Action ---
     @action(detail=True, methods=['put'], url_path='status')
     def update_status(self, request, pk=None):
