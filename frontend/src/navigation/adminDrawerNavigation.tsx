@@ -2,12 +2,12 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import AdminTabBottoms from "./adminNavigation";
+import { AdminStackNavigation } from "./adminStackNavigation";
 import { useAuth } from "../providers/authProvider";
 import { useNotify } from "../providers/notificationProvider";
 
 export type AdminDrawerParamList = {
-    AdminTabs: undefined;
+    AdminStackNavigation: undefined;
 };
 
 const Drawer = createDrawerNavigator<AdminDrawerParamList>();
@@ -60,7 +60,7 @@ export const AdminDrawerNavigator = () => {
                 drawerStyle: { width: 220 },
             }}
         >
-            <Drawer.Screen name="AdminTabs" component={AdminTabBottoms} />
+            <Drawer.Screen name="AdminStackNavigation" component={AdminStackNavigation} />
         </Drawer.Navigator>
     )
 }

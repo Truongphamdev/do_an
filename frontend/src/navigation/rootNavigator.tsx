@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import AuthNavigator from "./authNavigation";
-import { AdminDrawerNavigator } from "./adminDrawerNavigator";
+import { AdminDrawerNavigator } from "./adminDrawerNavigation";
 import { useAuth } from "../providers/authProvider";
 
 const RootNavigator = () => {

@@ -33,7 +33,7 @@ export default AppTextLink
 
 const styles = StyleSheet.create({
   textNavigation: {
-      color: '#330066',
+      color: '#1ABDBE',
       fontWeight: 'bold',
   },
 })

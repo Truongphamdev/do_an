@@ -58,51 +58,53 @@ const Register = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Đăng ký</Text>
-      <AppInput
-        name='username'
-        control={control}
-        placeholder='Tên tài khoản'
-        error={errors.username?.message}
-      />
-      <AppInput
-        name='first_name'
-        control={control}
-        placeholder='Họ'
-        error={errors.first_name?.message}
-      />
-      <AppInput
-        name='last_name'
-        control={control}
-        placeholder='Tên'
-        error={errors.last_name?.message}
-      />
-      <AppInput
-        name='email'
-        control={control}
-        placeholder='Email'
-        keyboardType="email-address"
-        autoCapitalize="none"
-        error={errors.email?.message}
-      />
-      <AppInput
-        name='password'
-        control={control}
-        placeholder='Mật khẩu'
-        secureTextEntry={true}
-        error={errors.password?.message}
-      />
-      <AppDropdown
-        name='role'
-        control={control}
-        options={ROLE_OPTIONS}
-        label='Chọn vai trò'
-        error={errors.role?.message}
-      />
-      <AppButton title={loading ? "Đang đăng ký" : "Đăng ký"} onPress={handleSubmit(handleRegister)}/>
-      <View style={styles.question}>
-        <Text>Bạn đã có tài khoản?</Text>
-        <AppTextLink title="Đăng nhập" onPress={() => navigation.navigate('Login')} />
+      <View style={styles.registerBox}>
+        <Text style={styles.title}>Đăng ký</Text>
+        <AppInput
+          name='username'
+          control={control}
+          placeholder='Tên tài khoản'
+          error={errors.username?.message}
+        />
+        <AppInput
+          name='first_name'
+          control={control}
+          placeholder='Họ'
+          error={errors.first_name?.message}
+        />
+        <AppInput
+          name='last_name'
+          control={control}
+          placeholder='Tên'
+          error={errors.last_name?.message}
+        />
+        <AppInput
+          name='email'
+          control={control}
+          placeholder='Email'
+          keyboardType="email-address"
+          autoCapitalize="none"
+          error={errors.email?.message}
+        />
+        <AppInput
+          name='password'
+          control={control}
+          placeholder='Mật khẩu'
+          secureTextEntry={true}
+          error={errors.password?.message}
+        />
+        <AppDropdown
+          name='role'
+          control={control}
+          options={ROLE_OPTIONS}
+          label='Chọn vai trò'
+          error={errors.role?.message}
+        />
+        <AppButton title={loading ? "Đang đăng ký" : "Đăng ký"} onPress={handleSubmit(handleRegister)} style={styles.registerButton}/>
+        <View style={styles.question}>
+          <Text>Bạn đã có tài khoản?</Text>
+          <AppTextLink title="Đăng nhập" onPress={() => navigation.navigate('Login')} />
+        </View>
       </View>
     </View>
   )
@@ -113,15 +115,28 @@ export default Register
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#AFE5E5',
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 20,
+  },
+  registerBox: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: "#fff",
+    width: "100%",
+    borderRadius: 10,
+    elevation: 5,
   },
   title: {
       marginBottom: 16,
       fontSize: 48,
       fontWeight: "900",
-      color: theme.color.primary,
+      color: "#1ABDBE",
+  },
+  registerButton: {
+    backgroundColor: "#1ABDBE",
   },
   question: {
       flexDirection: 'row',

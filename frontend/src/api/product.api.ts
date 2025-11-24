@@ -5,7 +5,7 @@ export interface Product {
     name: string;
     description: string;
     price: number;
-    category: number;
+    category_id: number;
     created_at?: string;
     updated_at?: string;
     image?: any;
@@ -26,12 +26,19 @@ export const ProductApi = {
         return product;
     },
 
+    async getByCategory(category_id: number): Promise<Product[]> {
+        const { data: productsByCategory } = await api.get<Product[]>("/products/product_filter", {
+            params: { category_id }
+        });
+        return productsByCategory;
+    },
+
     async create(payload: ProductCreate): Promise<Product> {
         const formData = new FormData();
         formData.append("name", payload.name);
         formData.append("description", payload.description);
         formData.append("price", String(payload.price));
-        formData.append("category", String(payload.category));
+        formData.append("category", String(payload.category_id));
 
         if (payload.image) {
             formData.append("image", {
@@ -54,7 +61,7 @@ export const ProductApi = {
             formData.append("name", payload.name);
             formData.append("description", payload.description);
             formData.append("price", String(payload.price));
-            formData.append("category", String(payload.category));
+            formData.append("category_id", String(payload.category_id));
 
             formData.append("image", {
                 uri: payload.image.url,

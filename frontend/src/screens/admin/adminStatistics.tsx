@@ -1,10 +1,13 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
+import AdminHeader from '../../components/adminHeader'
 
 const AdminStatistics = () => {
   return (
     <View>
-      <Text>AdminStatistics</Text>
+      <AdminHeader 
+        title='Statistics'
+      />
     </View>
   )
 }

@@ -23,35 +23,45 @@ const AdminHeader = ({title, showMenuOptions, showAdd, showSearch, showFilter, s
 
     return (
         <View style={styles.container}>
-            <View style={styles.sideMenuDrawer}>
+            <View style={styles.leftHeader}>
                 {showMenuOptions && (
-                    <TouchableOpacity onPress={onMenuOptions}>
+                    <TouchableOpacity onPress={onMenuOptions} style={styles.iconButton}>
                         <Icon name='bars' size={24} color="#707070" />
                     </TouchableOpacity>
                 )}
             </View>
 
-            {title && (
-                <Text style={styles.title}>{title}</Text>
-            )}
+            <View style={styles.centerHeader}>
+                {title && (
+                    <Text style={styles.title}>{title}</Text>
+                )}
+            </View>
 
-            {showAdd && (
-                <TouchableOpacity>
-                    <Icon name='bars' size={24} color="#707070" />
-                </TouchableOpacity>
-            )}
+            <View style={styles.rightHeader}>
+                {showAdd && (
+                    <TouchableOpacity style={styles.iconButton}>
+                        <Icon name='plus' size={16} color="#a4a4a4" />
+                    </TouchableOpacity>
+                )}
 
-            {showSearch && (
-                <TouchableOpacity>
-                    <Icon name='bars' size={24} color="#707070" />
-                </TouchableOpacity>
-            )}
+                {showSearch && (
+                    <TouchableOpacity style={styles.iconButton}>
+                        <Icon name='search' size={16} color="#a4a4a4" />
+                    </TouchableOpacity>
+                )}
 
-            {showProfile && (
-                <TouchableOpacity>
-                    <Icon name='bars' size={24} color="#707070" />
-                </TouchableOpacity>
-            )}
+                {showFilter && (
+                    <TouchableOpacity style={styles.iconButton}>
+                        <Icon name='filter' size={16} color="#a4a4a4" />
+                    </TouchableOpacity>
+                )}
+
+                {showProfile && (
+                    <TouchableOpacity style={styles.iconButton}>
+                        <Icon name='user' size={16} color="#a4a4a4" />
+                    </TouchableOpacity>
+                )}
+            </View>
         </View>
     )
 }
@@ -65,14 +75,34 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 16,
     },
-    sideMenuDrawer: {
+    leftHeader: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "flex-start",
+    },
+    centerHeader: {
+        flex: 1,
+        alignItems: "center",
+    },
+    rightHeader: {
+        flex: 1,
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "flex-end",
+        gap: 16,
     },
     title: {
         fontSize: 24,
         fontWeight: "bold",
-        color: "#0080FF",
-        marginLeft: 120,
+        color: "#1ABDBE",
+    },
+    iconButton: {
+        width: 30,
+        height: 30,          
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#fff",
+        borderRadius: 20,
+        elevation: 5,
     },
 })

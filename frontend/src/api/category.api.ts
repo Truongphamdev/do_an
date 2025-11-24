@@ -1,9 +1,9 @@
 import api from "./axiosClient";
 
 export interface Category {
-    id?: number;
+    id: number;
     name: string;
-    descriptions?: string;
+    description: string;
     created_at?: string;
     updated_at?: string;
 }
