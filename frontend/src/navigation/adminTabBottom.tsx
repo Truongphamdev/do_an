@@ -7,7 +7,6 @@ import AdminDashboard from "../screens/admin/adminDashboard"
 import AdminProduct from "../screens/admin/adminProduct"
 import AdminStaff from "../screens/admin/adminStaff"
 import AdminOrder from "../screens/admin/adminOrder"
-import AdminStatistics from "../screens/admin/adminStatistics"
 import { View } from "react-native"
 
 const Tab = createBottomTabNavigator();
@@ -20,9 +19,7 @@ export const AdminTabBottom = () => {
                 tabBarShowLabel: false,
                 tabBarStyle: {
                     backgroundColor: '#fff',
-                    borderTopLeftRadius: 20,
-                    borderTopRightRadius: 20,
-                    elevation: 5,
+                    elevation: 15,
                     height: 60,
                     paddingTop: 10,
                 },
@@ -33,7 +30,6 @@ export const AdminTabBottom = () => {
                     else if (route.name === "AdminProduct") iconName = "utensils";
                     else if (route.name === "AdminStaff") iconName = "users";
                     else if (route.name === "AdminOrder") iconName = "receipt";
-                    else if (route.name === "AdminStatistics") iconName = "chart-line";
 
                     return (
                         <View style={{ alignItems: "center"}}>
@@ -57,7 +53,6 @@ export const AdminTabBottom = () => {
             <Tab.Screen name="AdminProduct" component={AdminProduct} />
             <Tab.Screen name="AdminStaff" component={AdminStaff} />
             <Tab.Screen name="AdminOrder" component={AdminOrder} />
-            <Tab.Screen name="AdminStatistics" component={AdminStatistics} />
         </Tab.Navigator>
     )
 }

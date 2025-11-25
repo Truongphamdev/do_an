@@ -12,7 +12,7 @@ interface AppDropdownProps {
   name: string;
   control: Control<any>;
   options: Option[];
-  label: string;
+  label?: string;
   error?: string;
 }
 
@@ -49,12 +49,12 @@ export const AppDropdown = ({ name, control, options, label, error }: AppDropdow
 
 const styles = StyleSheet.create({
   container: {
-    width: '80%',
+    width: '100%',
     marginBottom: 16,
   },
   dropdown: {
     height: 50,
-    borderColor: "#aaa",
+    borderColor: "#595959",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   },
   selectedText: {
     fontSize: 16,
-    color: "#000",
+    color: "#595959",
   },
   placeholder: {
     fontSize: 16,
@@ -70,6 +70,6 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 16,
-    color: "#000",
+    color: "#595959",
   },
 });

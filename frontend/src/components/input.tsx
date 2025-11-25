@@ -51,12 +51,12 @@ export const AppInput = ({ style, containerStyle, name, control, error, secureTe
 
 const styles = StyleSheet.create({
     containerInput: {
-        width: '80%',
+        width: '100%',
     },
     input: {
         height: 48,
         borderWidth: 1,
-        borderColor: "#707070",
+        borderColor: "#595959",
         borderRadius: 8,
         marginBottom: 16,
         paddingHorizontal: 16,

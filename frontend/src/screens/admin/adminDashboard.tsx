@@ -18,6 +18,7 @@ const AdminDashboard = () => {
         onMenuOptions={() => {
           navigation.toggleDrawer();
         }}
+        style={styles.iconMenuDrawer}
       />
     </View>
   )
@@ -25,4 +26,9 @@ const AdminDashboard = () => {
 
 export default AdminDashboard
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  iconMenuDrawer: {
+    width: 40,
+    height: 40,
+  },
+})
