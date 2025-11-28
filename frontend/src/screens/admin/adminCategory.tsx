@@ -22,13 +22,12 @@ const AdminCategory = () => {
     });
 
     const [ showContainerInput, setShowContainerInput ] = useState(false);
-    const { success, error } = useNotify();
-    const notify = useNotify();
+    const { success, error, confirm } = useNotify();
     const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
     const [ categories, setCategories ] = useState<Category[]>([]);
     const [ editingCategory, setEditingCategory] = useState<Category | null>(null);
 
-    // Khi khởi động màn hình app thì gọi các hàm trong useEffect 1 lần duy nhất
+    // Khi khởi động màn hình app thì gọi các hàm trong useEffect
     useEffect(() => {
         fetchCategories();
     }, []);
@@ -80,7 +79,7 @@ const AdminCategory = () => {
 
     // Hàm chức năng xóa danh mục
     const handelDelete = async (id: number) => {
-        notify.confirm({
+        confirm({
             title: "Thông báo",
             message: "Bạn có chắc chắn muốn xóa danh mục này?",
             onConfirm: async () => {
@@ -113,99 +112,98 @@ const AdminCategory = () => {
     )
 
     return (
-        <View style={styles.ScrollContainer}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
-                    <Icon name='arrow-left' style={styles.iconGoBack}/>
-                </TouchableOpacity>
+        <>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
+                <Icon name='arrow-left' style={styles.iconGoBack}/>
+            </TouchableOpacity>
+
+            <View style={styles.container}>
                 <Text style={styles.titleHeader}>Quản lý danh mục</Text>
-            </View>
 
-            {!showContainerInput && (
-                <View style={styles.containerAddCategoryButton}>
-                    <TouchableOpacity onPress={() => setShowContainerInput(true)} style={styles.addCategoryButton}>
-                        <Text style={styles.addCategoryTextButton}>Thêm danh mục</Text>
-                        {/* <Icon name='plus' size={16} color="#1ABDBE"/> */}
-                    </TouchableOpacity>
-                </View>
-            )}
-
-            {showContainerInput && (
-                <View style={styles.boxInput}>
-                    <Text style={styles.boxInputTitle}>{editingCategory ? 'Cập nhật thông tin danh mục' : 'Nhập thông tin danh mục'}</Text>
-                    <AppInput
-                        name='name'
-                        control={control}
-                        placeholder='Tên danh mục'
-                        error={errors.name?.message}
-                        style={styles.appInput}
-                    />
-                    <AppInput
-                        name='description'
-                        control={control}
-                        placeholder='Mô tả danh mục'
-                        error={errors.description?.message}
-                        style={[styles.appInput, { height: 120 }]}
-                        multiline={true}
-                        numberOfLines={4}
-                    />
-                    <View style={styles.boxInputButtons}>
-                        <TouchableOpacity 
-                            onPress={() => {
-                                setShowContainerInput(false);
-                                setEditingCategory(null);
-                                reset({ name: "", description: "" })
-                            }}
-                            style={[styles.boxInputButton, { backgroundColor: "#d9eef4ff"}]}>
-                            <Text style={[styles.boxInputTextButton, { color: "#1ABDBE" }]}>Hủy</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={handleSubmit(onSubmit)} style={[styles.boxInputButton, { backgroundColor: "#FCB35E"}]}>
-                            <Text style={[styles.boxInputTextButton, { color: "#fff" }]}>{editingCategory ? 'Cập nhật' : 'Thêm'}</Text>
+                {!showContainerInput && (
+                    <View style={styles.containerAddCategoryButton}>
+                        <TouchableOpacity onPress={() => setShowContainerInput(true)} style={styles.addCategoryButton}>
+                            <Text style={styles.addCategoryTextButton}>Thêm danh mục</Text>
+                            {/* <Icon name='plus' size={16} color="#1ABDBE"/> */}
                         </TouchableOpacity>
                     </View>
-                </View>
-            )}
+                )}
 
-            {categories && (
-                <View style={styles.listCategory}>
-                    <Text style={styles.titleListCategory}>Danh sách danh mục</Text>
-                    <FlatList
-                        data={categories}
-                        renderItem={renderItem}
-                        keyExtractor={(item) => item.id.toString()}
-                    />
-                </View>
-            )}
-        </View>
+                {showContainerInput && (
+                    <View style={styles.boxInput}>
+                        <Text style={styles.boxInputTitle}>{editingCategory ? 'Cập nhật thông tin danh mục' : 'Nhập thông tin danh mục'}</Text>
+                        <AppInput
+                            name='name'
+                            control={control}
+                            placeholder='Tên danh mục'
+                            error={errors.name?.message}
+                            style={styles.appInput}
+                        />
+                        <AppInput
+                            name='description'
+                            control={control}
+                            placeholder='Mô tả danh mục'
+                            error={errors.description?.message}
+                            style={[styles.appInput, { height: 120 }]}
+                            multiline={true}
+                            numberOfLines={4}
+                        />
+                        <View style={styles.boxInputButtons}>
+                            <TouchableOpacity 
+                                onPress={() => {
+                                    setShowContainerInput(false);
+                                    setEditingCategory(null);
+                                    reset({ name: "", description: "" })
+                                }}
+                                style={[styles.boxInputButton, { backgroundColor: "#d9eef4ff"}]}>
+                                <Text style={[styles.boxInputTextButton, { color: "#1ABDBE" }]}>Hủy</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleSubmit(onSubmit)} style={[styles.boxInputButton, { backgroundColor: "#FCB35E"}]}>
+                                <Text style={[styles.boxInputTextButton, { color: "#fff" }]}>{editingCategory ? 'Cập nhật' : 'Thêm'}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+
+                {categories && (
+                    <View style={styles.listCategory}>
+                        <Text style={styles.titleListCategory}>Danh sách danh mục</Text>
+                        <FlatList
+                            data={categories}
+                            renderItem={renderItem}
+                            keyExtractor={(item) => item.id.toString()}
+                        />
+                    </View>
+                )}
+            </View>
+        </>
     )
 }
 
 export default AdminCategory
 
 const styles = StyleSheet.create({
-    ScrollContainer: {
+    container: {
         padding: 16,
         flexGrow: 1,
         backgroundColor: "#AFE5E5",
     },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
     titleHeader: {
-        flex: 4,
         fontSize: 28,
         fontWeight: "900",
         color: "#1ABDBE",
+        textAlign: "center",
     },
     goBackButton: {
-        flex: 1,
+        position: "absolute",
+        left: 20,
+        top: 20,
+        height: 50,
         width: 50,
-        alignItems: "flex-start",
+        zIndex: 999,
     },
     iconGoBack: {
         fontSize: 20,
-        textAlign: "center",
         color: "#fff",
     },
 

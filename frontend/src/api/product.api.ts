@@ -1,23 +1,23 @@
 import api from "./axiosClient";
 
 export interface Product {
-    id?: number;
+    id: number;
     name: string;
     description: string;
     price: number;
     category_id: number;
     created_at?: string;
     updated_at?: string;
-    image?: any;
+    image: any;
 }
 
 // utility types tạo kiểu con thích hợp cho create/update
-type ProductCreate = Omit<Product, "id" | "created_at" | "updated_at" >;
+type ProductCreate = Omit<Product, "id" | "created_at" | "updated_at" | "category_id" > & { category: number };
 type ProductUpdate = Partial<ProductCreate>;
 
 export const ProductApi = {
     async getAll(): Promise<Product[]> {
-        const { data: products } = await api.get<Product[]>("/products");
+        const { data: products } = await api.get<Product[]>("/products/");
         return products;
     },
 
@@ -38,18 +38,18 @@ export const ProductApi = {
         formData.append("name", payload.name);
         formData.append("description", payload.description);
         formData.append("price", String(payload.price));
-        formData.append("category", String(payload.category_id));
+        formData.append("category", payload.category);
 
         if (payload.image) {
             formData.append("image", {
-                uri: payload.image.url,
+                uri: payload.image.uri,
                 name: payload.image.fileName || "image.jpg",
                 type: payload.image.type || "image/jpeg",
             } as any);
         }
 
-        const { data: image } = await api.post<Product>("/products", formData);
-        return image;
+        const { data: newProduct } = await api.post<Product>("/products/", formData, { headers: { "Content-Type": "multipart/form-data" } });
+        return newProduct;
     },
 
     async update(id: number, payload: ProductUpdate): Promise<Product> {
@@ -61,12 +61,12 @@ export const ProductApi = {
             formData.append("name", payload.name);
             formData.append("description", payload.description);
             formData.append("price", String(payload.price));
-            formData.append("category_id", String(payload.category_id));
+            formData.append("category", payload.category);
 
             formData.append("image", {
-                uri: payload.image.url,
+                uri: payload.image.uri,
                 name: payload.image.fileName || "image.jpg",
-                type: payload.image.type || "image.jpeg",
+                type: payload.image.type || "image/jpeg",
             } as any);
 
             const { data } = await api.put<Product>(`/products/${id}`, formData);

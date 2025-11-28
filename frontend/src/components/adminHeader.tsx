@@ -17,15 +17,16 @@ interface AdminHeaderProps {
     onFilterPress?: () => void;
     onBellPress?: () => void;
     onProfilePress?: () => void;
+    style?: any;
 }
 
-const AdminHeader = ({title, showMenuOptions, showAdd, showSearch, showFilter, showBell, showProfile, onAddPress, onMenuOptions, onSearchPress, onFilterPress, onBellPress, onProfilePress}: AdminHeaderProps) => {
+const AdminHeader = ({title, showMenuOptions, showAdd, showSearch, showFilter, showBell, showProfile, onAddPress, onMenuOptions, onSearchPress, onFilterPress, onBellPress, onProfilePress, style}: AdminHeaderProps) => {
 
     return (
         <View style={styles.container}>
             <View style={styles.leftHeader}>
                 {showMenuOptions && (
-                    <TouchableOpacity onPress={onMenuOptions} style={styles.iconButton}>
+                    <TouchableOpacity onPress={onMenuOptions} >
                         <Icon name='bars' size={24} color="#707070" />
                     </TouchableOpacity>
                 )}
@@ -39,26 +40,32 @@ const AdminHeader = ({title, showMenuOptions, showAdd, showSearch, showFilter, s
 
             <View style={styles.rightHeader}>
                 {showAdd && (
-                    <TouchableOpacity style={styles.iconButton}>
+                    <TouchableOpacity>
                         <Icon name='plus' size={16} color="#a4a4a4" />
                     </TouchableOpacity>
                 )}
 
                 {showSearch && (
-                    <TouchableOpacity style={styles.iconButton}>
+                    <TouchableOpacity>
                         <Icon name='search' size={16} color="#a4a4a4" />
                     </TouchableOpacity>
                 )}
 
                 {showFilter && (
-                    <TouchableOpacity style={styles.iconButton}>
+                    <TouchableOpacity>
                         <Icon name='filter' size={16} color="#a4a4a4" />
                     </TouchableOpacity>
                 )}
 
                 {showProfile && (
-                    <TouchableOpacity style={styles.iconButton}>
+                    <TouchableOpacity>
                         <Icon name='user' size={16} color="#a4a4a4" />
+                    </TouchableOpacity>
+                )}
+
+                {showBell && (
+                    <TouchableOpacity>
+                        <Icon name='bell' solid size={20} color="#a4a4a4" style={style}/>
                     </TouchableOpacity>
                 )}
             </View>
@@ -81,7 +88,7 @@ const styles = StyleSheet.create({
         alignItems: "flex-start",
     },
     centerHeader: {
-        flex: 1,
+        flex: 3,
         alignItems: "center",
     },
     rightHeader: {
@@ -95,14 +102,5 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: "bold",
         color: "#1ABDBE",
-    },
-    iconButton: {
-        width: 30,
-        height: 30,          
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#fff",
-        borderRadius: 20,
-        elevation: 5,
     },
 })

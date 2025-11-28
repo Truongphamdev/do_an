@@ -1,4 +1,5 @@
 import api from "./axiosClient";
+import { ProductApi } from "./product.api";
 
 export interface RNfile {
     uri: string;
@@ -35,37 +36,41 @@ export const ImageApi = {
         formData.append("image", {
             uri: payload.image.uri,
             name: payload.image.fileName || "image.jpg",
-            type: payload.image.type || "image.jpeg",
+            type: payload.image.type || "image/jpeg",
         });
-        const { data: image } = await api.post<Image>(`/products/${productId}/images`, formData);
+        const { data: image } = await api.post<Image>(`/products/${productId}/images`, formData, { headers: { "Content-Type": "multipart/form-data" }} );
         return image;
     },
 
-    async update(id: number, payload: ImageUpdate): Promise<Image> {
+    async update(productId: number, id: number, payload: ImageUpdate): Promise<Image> {
         let updatedImage: Image;
 
         if (payload.image && isRNfile(payload.image)) {
             const formData = new FormData();
-            formData.append("is_primary", String(payload.is_primary));
+
+            // Kiểm tra để tranh undefined thuộc tính is_primary
+            if (payload.is_primary !== undefined) formData.append("is_primary", String(payload.is_primary));
+
             formData.append("image", {
                 uri: payload.image.uri,
                 name: payload.image.fileName || "image.jpg",
-                type: payload.image.type || "image.jpeg",
+                type: payload.image.type || "image/jpeg",
             });
-            const { data } = await api.post<Image>(`/images/${id}`, formData);
+            const { data } = await api.put<Image>(`/products/${productId}/images/${id}`, formData, { headers: { "Content-Type": "multipart/form-data" }} );
             updatedImage = data;
         } else {
             const body: any = {};
+            // Kiểm tra để tranh undefined thuộc tính is_primary
             if (payload.is_primary !== undefined) body.is_primary = payload.is_primary;
 
-            const { data } = await api.put<Image>(`/images/${id}`, body);
+            const { data } = await api.put<Image>(`/products/${productId}/images/${id}`, body);
             updatedImage = data;
         }
 
         return updatedImage;
     },
 
-    async remove(id: number): Promise<void> {
-        await api.delete(`/images/${id}`);
+    async remove(productId: number, id: number): Promise<void> {
+        await api.delete(`/products/${productId}/images/${id}`);
     },
 }
