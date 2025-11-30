@@ -138,7 +138,7 @@ class Invoice(models.Model):
         ("unpaid", "Unpaid"),
         ("partially_paid", "Partially Paid"),
         ("canceled", "Canceled"),
-    ),default="unpaid"),
+    ),default="paid"),
     invoice_date = models.DateTimeField(auto_now_add=True),
     invoice_number = models.CharField(max_length=100,blank=True,null=True,unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -154,7 +154,7 @@ class Payment(models.Model):
         ('cash', 'Cash'),
         ('credit_card', 'Credit Card'),
         ('mobile_payment', 'Mobile Payment'),
-    ))
+    ), default='cash')
     status = models.CharField(max_length=20, choices=(
         ('pending', 'Pending'),
         ('completed', 'Completed'),
@@ -163,6 +163,8 @@ class Payment(models.Model):
     transaction_id = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_expired = models.BooleanField(default=False)
+    expired_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"Payment for Order {self.order.id}"

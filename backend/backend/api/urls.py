@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 from .view import (
     RegisterView,
     LoginView,
@@ -11,8 +12,11 @@ from .view import (
     CartItemViewSet,
     OrderViewSet,
     AdminOrderViewSet,
-    OrderCashierViewSet
-
+    OrderCashierViewSet,
+    CreateQRView,
+    sepay_webhook,
+    CheckPaymentStatusView,
+    InvoiceViewSet
 )
 from .view.product.product import ProductViewSet
 from rest_framework.routers import DefaultRouter
@@ -53,6 +57,12 @@ urlpatterns = [
     # order
     path('orders',OrderViewSet.as_view({'post':'create'})),
     path('admin/orders',AdminOrderViewSet.as_view({'get':'list_orders'})),
+    # payment
+    path('sepay/create/', CreateQRView.as_view(), name='sepay_create'),
+    # check payment status
+    path('payment/status/<int:order_id>/', CheckPaymentStatusView.as_view(), name='check_payment_status'),
+    # invoice
+    path('invoices/<int:pk>/', InvoiceViewSet.as_view({'get': 'retrieve'}), name='invoice-detail'),
 
     # Include all routes from the router (ProductViewSet)
     path('', include(router.urls)),

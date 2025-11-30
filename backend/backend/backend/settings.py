@@ -28,7 +28,8 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = ["*"]
 
-
+SEPAY_API_KEY = config('SEPAY_API_KEY')
+SEPAY_WEBHOOK_URL = config('SEPAY_WEBHOOK_URL')
 # Application definition
 
 INSTALLED_APPS = [

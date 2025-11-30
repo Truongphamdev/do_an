@@ -17,8 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.urls import include
+from api.view.payment.payment import sepay_webhook
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
+    path('webhook/sepay/', sepay_webhook, name='sepay_webhook'),  
 ]
