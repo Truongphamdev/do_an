@@ -1,39 +1,51 @@
 import api from "./axiosClient";
 
-export interface Product {
+export interface ProductInterface {
     id: number;
     name: string;
     description: string;
     price: number;
-    category_id: number;
+    category: number;
+    category_name?: string;
     created_at?: string;
     updated_at?: string;
-    image: any;
+
+    // cấu hình khi dữ liệu được trả về
+    // image dùng cho chức năng upload
+    image?: string;
+    // image_url dùng cho hiển thị
+    image_url?: string;
+}
+
+export interface ProductImage {
+    uri: string;
+    type?: string;
+    fileName?: string;
 }
 
 // utility types tạo kiểu con thích hợp cho create/update
-type ProductCreate = Omit<Product, "id" | "created_at" | "updated_at" | "category_id" > & { category: number };
+type ProductCreate = Omit<ProductInterface, "id" | "created_at" | "updated_at" | "category_id" > & { image?: ProductImage };
 type ProductUpdate = Partial<ProductCreate>;
 
 export const ProductApi = {
-    async getAll(): Promise<Product[]> {
-        const { data: products } = await api.get<Product[]>("/products/");
+    async getAll(): Promise<ProductInterface[]> {
+        const { data: products } = await api.get<ProductInterface[]>("/products/");
         return products;
     },
 
-    async getById(id: number): Promise<Product> {
-        const { data: product } = await api.get<Product>(`/products/${id}`);
+    async getById(id: number): Promise<ProductInterface> {
+        const { data: product } = await api.get<ProductInterface>(`/products/${id}`);
         return product;
     },
 
-    async getByCategory(category_id: number): Promise<Product[]> {
-        const { data: productsByCategory } = await api.get<Product[]>("/products/product_filter", {
+    async getByCategory(category_id: number): Promise<ProductInterface[]> {
+        const { data: productsByCategory } = await api.get<ProductInterface[]>("/products/product_filter", {
             params: { category_id }
         });
         return productsByCategory;
     },
 
-    async create(payload: ProductCreate): Promise<Product> {
+    async create(payload: ProductCreate): Promise<ProductInterface> {
         const formData = new FormData();
         formData.append("name", payload.name);
         formData.append("description", payload.description);
@@ -48,12 +60,12 @@ export const ProductApi = {
             } as any);
         }
 
-        const { data: newProduct } = await api.post<Product>("/products/", formData, { headers: { "Content-Type": "multipart/form-data" } });
+        const { data: newProduct } = await api.post<ProductInterface>("/products/", formData, { headers: { "Content-Type": "multipart/form-data" } });
         return newProduct;
     },
 
-    async update(id: number, payload: ProductUpdate): Promise<Product> {
-        let updatedProduct: Product;
+    async update(productId: number, payload: ProductUpdate): Promise<ProductInterface> {
+        let updatedProduct: ProductInterface;
 
         if(payload.image) {
             // trường hợp có ảnh mới
@@ -69,17 +81,17 @@ export const ProductApi = {
                 type: payload.image.type || "image/jpeg",
             } as any);
 
-            const { data } = await api.put<Product>(`/products/${id}`, formData);
+            const { data } = await api.put<ProductInterface>(`/products/${productId}/`, formData);
             updatedProduct = data;
         } else {
             // trường hợp không có ảnh mới
-            const { data } = await api.put<Product>(`/products/${id}`, payload);
+            const { data } = await api.put<ProductInterface>(`/products/${productId}/`, payload);
             updatedProduct = data;
         }
         return updatedProduct;
     },
 
     async remove(id: number): Promise<void> {
-        await api.delete(`/products/${id}`);
+        await api.delete(`/products/${id}/`);
     },
 }

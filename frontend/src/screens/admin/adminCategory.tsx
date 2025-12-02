@@ -8,7 +8,7 @@ import { useNotify } from '../../providers/notificationProvider'
 import { categorySchema, type categoryForm } from '../../validation/categoryValidation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { CategoryApi, type Category } from '../../api/category.api'
+import { CategoryApi, type CategoryInterface } from '../../api/category.api'
 import { AppInput } from '../../components'
 import { FlatList } from 'react-native-gesture-handler'
 
@@ -24,8 +24,8 @@ const AdminCategory = () => {
     const [ showContainerInput, setShowContainerInput ] = useState(false);
     const { success, error, confirm } = useNotify();
     const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
-    const [ categories, setCategories ] = useState<Category[]>([]);
-    const [ editingCategory, setEditingCategory] = useState<Category | null>(null);
+    const [ categories, setCategories ] = useState<CategoryInterface[]>([]);
+    const [ editingCategory, setEditingCategory] = useState<CategoryInterface | null>(null);
 
     // Khi khởi động màn hình app thì gọi các hàm trong useEffect
     useEffect(() => {
@@ -69,7 +69,7 @@ const AdminCategory = () => {
     }
 
     // Hàm bổ sung chức năng sửa
-    const handleEdit = (category: Category) => {
+    const handleEdit = (category: CategoryInterface) => {
         setEditingCategory(category);
         setShowContainerInput(true);
 
@@ -96,9 +96,9 @@ const AdminCategory = () => {
     }
 
     // Render item danh sách danh mục
-    const renderItem = ({ item, index }: { item: Category, index: number }) => (
+    const renderItem = ({ item, index }: { item: CategoryInterface, index: number }) => (
         <View style={styles.itemCategory}>
-            <Text style={styles.soThuTu}>{index + 1}</Text>
+            <Text style={styles.serialNumber}>{index + 1}</Text>
             <Text style={styles.nameCategory}>{item.name}</Text>
             <View style={styles.actionCategoryButtons}>
                 <TouchableOpacity onPress={() => {handleEdit(item)}} style={[styles.actionCategoryButton, { backgroundColor: "#3a9bfbff"}]}>
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     container: {
         padding: 16,
         flexGrow: 1,
-        backgroundColor: "#AFE5E5",
+        backgroundColor: "#CEE1E6",
     },
     titleHeader: {
         fontSize: 28,
@@ -291,8 +291,8 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         padding: 5,
     },
-    soThuTu: {
-        flex: 1,
+    serialNumber: {
+        flex: 0.5,
         fontSize: 16,
         padding: 5,
     },

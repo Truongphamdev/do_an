@@ -5,10 +5,10 @@ import { Dropdown } from "react-native-element-dropdown";
 
 interface Option {
   label: string;
-  value: string;
+  value: string | number;
 }
 
-interface AppDropdownProps {
+interface AppDropdownProps<T extends string | number> {
   name: string;
   control: Control<any>;
   options: Option[];
@@ -16,7 +16,7 @@ interface AppDropdownProps {
   error?: string;
 }
 
-export const AppDropdown = ({ name, control, options, label, error }: AppDropdownProps) => {
+export const AppDropdown = <T extends string | number>({ name, control, options, label, error }: AppDropdownProps<T>) => {
   return (
     <View style={styles.container}>
       {error && (
@@ -34,7 +34,7 @@ export const AppDropdown = ({ name, control, options, label, error }: AppDropdow
               valueField="value"
               placeholder={label}
               value={value}
-              onChange={(item) => onChange(item.value)}
+              onChange={(item) => onChange(item.value as T)}
               maxHeight={300}
               selectedTextStyle={styles.selectedText}
               placeholderStyle={styles.placeholder}
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     height: 50,
-    borderColor: "#595959",
+    borderColor: "#000",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   },
   selectedText: {
     fontSize: 16,
-    color: "#595959",
+    color: "#000",
   },
   placeholder: {
     fontSize: 16,
@@ -70,6 +70,6 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 16,
-    color: "#595959",
+    color: "#000",
   },
 });

@@ -7,7 +7,7 @@ import AdminAddProduct from "../screens/admin/adminAddProduct";
 export type AdminStackParamList = {
     AdminTabBottom: undefined;
     AdminCategory: undefined;
-    AdminAddProduct: undefined;
+    AdminAddProduct: { productId?: number };
 }
 
 const Stack = createNativeStackNavigator();

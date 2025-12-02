@@ -37,7 +37,7 @@ export const ImageUploader: React.FC<ImageProps> = ({ name, value, onChange, sty
     return (
         <TouchableOpacity
             style={[styles.container, style]}
-            onPress={!selectedImage ? PickImage : undefined}
+            onPress={PickImage}
             activeOpacity={0.8}
         >
             {selectedImage ? (

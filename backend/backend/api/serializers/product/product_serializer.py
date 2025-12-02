@@ -13,7 +13,9 @@ class ImageSerializer(serializers.ModelSerializer):
         fields = ('id', 'image', 'is_primary', 'created_at', 'image_url')
         read_only_fields = ('id', 'created_at', 'image_url')
     def get_image_url(self, obj):
-        return cloudinary.CloudinaryImage(obj.image).build_url()
+        if obj.image:
+            return f"https://res.cloudinary.com/diwwq8qyt/image/upload/{obj.image}"
+        return None
     def create(self,validate_data):
         product = self.context.get('product') if self.context.get('product') else None
         if product:
@@ -48,14 +50,21 @@ class ImageSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False, write_only=True)
+    image_url = serializers.SerializerMethodField()
+    category_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Product
-        fields = ('id', 'name', 'description', 'image', 'price', 'category', 'created_at', 'updated_at')
+        fields = ('id', 'name', 'description', 'image', 'image_url', 'price', 'category', 'category_name', 'created_at', 'updated_at')
         read_only_fields = ('id', 'created_at', 'updated_at')
-    def get_image(self,obj):
+    def get_image_url(self, obj):
         primary_image = Image.objects.filter(product=obj, is_primary=True).first()
-        if primary_image:
+        if primary_image and primary_image.image:
             return primary_image.image.url
+        return None
+    def get_category_name(self, obj):
+        if obj.category:
+            return obj.category.name
         return None
     def validate_name(self, value):
         if not value or value.strip() == '':

@@ -1,6 +1,6 @@
 import api from "./axiosClient";
 
-export interface Category {
+export interface CategoryInterface {
     id: number;
     name: string;
     description: string;
@@ -9,22 +9,22 @@ export interface Category {
 }
 
 // utility types tạo kiểu con thích hợp cho create/update
-type CategoryCreate = Omit<Category, "id" | "created_at" | "updated_at">;
+type CategoryCreate = Omit<CategoryInterface, "id" | "created_at" | "updated_at">;
 type CategoryUpdate = Partial<CategoryCreate>;
 
 export const CategoryApi = {
-    async getAll(): Promise<Category[]> {
-        const { data: categories } = await api.get<Category[]>("/categories");
+    async getAll(): Promise<CategoryInterface[]> {
+        const { data: categories } = await api.get<CategoryInterface[]>("/categories");
         return categories;
     },
 
-    async create(payload: CategoryCreate): Promise<Category> {
-        const { data: newCategory } = await api.post<Category>("/categories", payload);
+    async create(payload: CategoryCreate): Promise<CategoryInterface> {
+        const { data: newCategory } = await api.post<CategoryInterface>("/categories", payload);
         return newCategory;
     },
 
-    async update(id: number, payload: CategoryUpdate): Promise<Category> {
-        const { data: updatedCategory } = await api.put<Category>(`/categories/${id}`, payload);
+    async update(id: number, payload: CategoryUpdate): Promise<CategoryInterface> {
+        const { data: updatedCategory } = await api.put<CategoryInterface>(`/categories/${id}`, payload);
         return updatedCategory;
     },
 
