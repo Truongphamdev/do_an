@@ -11,7 +11,7 @@ export const ProductSchema = z.object({
         required_error: "Vui lòng nhập giá món.",
         invalid_type_error: "Giá món phải là một số, không phải chuỗi.",
     }).positive({ message: "Giá món phải lớn hơn 0." }),
-    category_id: z.coerce.number({
+    category: z.coerce.number({
         required_error: "Vui lòng chọn danh mục.",
         invalid_type_error: "Danh mục ko hợp lệ.",
     }).int().positive(),

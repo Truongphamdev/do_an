@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import React from 'react';
-import { useNavigation } from '@react-navigation/native';
+import React, { useEffect } from 'react';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AdminStackParamList } from '../../navigation/adminStackNavigation';
 import Icon from "react-native-vector-icons/FontAwesome5";
@@ -11,16 +11,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useCategories } from '../../hooks/useCategories';
 import { ProductApi } from '../../api/product.api';
-import { ImageApi } from '../../api/image.api';
+import { ImageApi, RNfile } from '../../api/image.api';
+
+// kiểu dữ liệu cho route.params khi nhận productId
+type AdminAddProductRouteProp = RouteProp<AdminStackParamList, 'AdminAddProduct'>;
 
 const AdminAddProduct = () => {
-    const { control, handleSubmit, formState: {errors}, setValue, reset } = useForm<productForm>({
+    const { control, handleSubmit, formState: {errors}, setValue, watch } = useForm<productForm>({
         resolver: zodResolver(ProductSchema),
         defaultValues: {
             name: "",
             description: "",
             price: 0,
-            category_id: 7,
+            category: 0,
             image: undefined,
         }
     });
@@ -28,33 +31,99 @@ const AdminAddProduct = () => {
     const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
     const { categories, loading } = useCategories();
     const { success, error } = useNotify();
+
+    // state cho phần nhận productId
+    const route = useRoute<AdminAddProductRouteProp>();
+    const productId = route.params?.productId;
+    const isEditting = Boolean(productId);
+
+    useEffect(() => {
+        // gọi khi có productId để sửa sản phẩm
+        if (productId) {
+            loadProductById(productId);
+        }
+    }, [productId]);
+
+    const loadProductById = async ( id: number ) => {
+        try {
+            const productById = await ProductApi.getById(id);
+
+            setValue("name", productById.name);
+            setValue("description", productById.description);
+            setValue("price", productById.price);
+            setValue("category", Number(productById.category));
+
+            if (productById.image_url) setValue("image", { uri: productById.image_url } as RNfile);
+        } catch (err: any) {
+            error("Không tải đc sản phẩm cần sửa!");
+        }
+    }
     
     // dữ liệu cho dropdown danh mục
     const CATEGORY_OPTIONS = categories.map(category => ({
         label: category.name,
-        value: String(category.id),
+        value: Number(category.id),
     }));
 
     const onSubmit = async (data: productForm) => {
         try {
-            const createdProduct = await ProductApi.create({
-                name: data.name,
-                description: data.description,
-                price: Number(data.price),
-                category: Number(data.category_id),
-            });
-            success("Tạo sản phẩm thành công!");
+            if (isEditting) {
+                // SỬA SẢN PHẨM
+                try {
+                    if (productId !== undefined) {
+                        await ProductApi.update(productId, {
+                            name: data.name,
+                            description: data.description,
+                            price: Number(data.price),
+                            category: Number(data.category),
+                        });
 
-            if (data.image) {
-                await ImageApi.create(createdProduct.id, {
-                    image: data.image,
-                    is_primary: true,
-                });
-                success("Tải ảnh lên thành công!");
-            };
-            navigation.goBack();
+                        if (data.image) {
+                            // chức năng đảm bảo mỗi sản phẩm chỉ có 1 ảnh
+                            const existingImage = await ImageApi.getByProduct(productId);
+                            const primaryImage = existingImage.find(image => image.is_primary);
+                            if (primaryImage) await ImageApi.update(
+                                productId,
+                                primaryImage.id,
+                                { is_primary: false },
+                            );
+
+                            await ImageApi.create(productId, {
+                                image: data.image,
+                                is_primary: true,
+                            })
+                        }
+                        success("Cập nhật sản phẩm thành công!");
+                        navigation.goBack();
+                    }
+                } catch (er: any) {
+                    error("Cập nhật sản phẩm thất bại");
+                }
+            } else {
+                // TẠO SẢN PHẨM MỚI
+                try {
+                    const createdProduct = await ProductApi.create({
+                        name: data.name,
+                        description: data.description,
+                        price: Number(data.price),
+                        category: Number(data.category),
+                    });
+                    success("Tạo sản phẩm thành công!");
+
+                    if (data.image) {
+                        await ImageApi.create(createdProduct.id, {
+                            image: data.image,
+                            is_primary: true,
+                        });
+                        success("Tải ảnh lên thành công!");
+                    };
+                    navigation.goBack();
+                } catch (err: any) {
+                    error("Tạo sản phẩm thất bại!");
+                }
+            }
         } catch (err: any) {
-            error("Thêm sản phẩm thất bại!");
+            error("Lưu dữ liệu thất bại!");
         }
     }
 
@@ -67,7 +136,7 @@ const AdminAddProduct = () => {
             <View style={styles.container}>
 
                 <View style={styles.containerAddProduct}>
-                    <Text style={styles.titleHeader}>Thêm sản phẩm</Text>
+                    <Text style={styles.titleHeader}>{isEditting ? "Sửa sản phẩm" : "Thêm sản phẩm"}</Text>
                     <AppImageUploader
                         name='image'
                         control={control}
@@ -85,11 +154,11 @@ const AdminAddProduct = () => {
                     <View style={styles.box}>
                         <Text>Danh mục món</Text>
                         <AppDropdown
-                            name='category_id'
+                            name='category'
                             control={control}
                             options={CATEGORY_OPTIONS}
                             label='chọn danh mục'
-                            error={errors.category_id?.message}
+                            error={errors.category?.message}
                         />
                     </View>
 
@@ -116,7 +185,7 @@ const AdminAddProduct = () => {
                     </View>
 
                     <TouchableOpacity onPress={handleSubmit(onSubmit)} style={styles.button}>
-                        <Text style={styles.textButton}>Thêm</Text>
+                        <Text style={styles.textButton}>{isEditting ? "Cập nhật" : "Thêm"}</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -131,7 +200,7 @@ const styles = StyleSheet.create({
     container: {
         padding: 16,
         flexGrow: 1,
-        backgroundColor: "#AFE5E5",
+        backgroundColor: "#CEE1E6",
     },
     titleHeader: {
         fontSize: 28,

@@ -1,18 +1,22 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, TextInput } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, TextInput, Animated, Easing } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import AdminHeader from '../../components/adminHeader'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { AdminStackParamList } from '../../navigation/adminStackNavigation'
 import Icon from "react-native-vector-icons/FontAwesome5"
-import { ProductApi, type Product } from '../../api/product.api'
+import { ProductApi, type ProductInterface } from '../../api/product.api'
 import { useNotify } from '../../providers/notificationProvider'
+
+// ảnh mặc định khi ko lấy được dữ liệu ảnh
+const placeholderImageProduct = require("../../assets/images/placeholderProduct.png");
+
 
 const AdminProduct = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
   const [ search, setSearch ] = useState("");
-  const [ products, setProducts ] = useState<Product[]>([]);
-  const { success, error } = useNotify();
+  const [ products, setProducts ] = useState<ProductInterface[]>([]);
+  const { success, error, confirm } = useNotify();
 
   // Khi khởi động màn hình app thì gọi các hàm trong useEffect
   useEffect(() => {
@@ -23,16 +27,95 @@ const AdminProduct = () => {
   const fetchProducts = async () => {
     try {
       const data = await ProductApi.getAll();
-      setProducts(data);
+      
+      const productWithImages = data.map(product => ({
+        ...product,
+        image: product.image_url ?? "https://via.placeholder.com/40x30"
+      }));
+
+      setProducts(productWithImages);
     } catch (err: any) {
       error("Lấy danh sách sản phẩm thất bại!");
     }
   }
 
-  const renderItem = ({ item, index}: { item: Product, index: number}) => (
-    <View>
-      <Text>{index + 1}</Text>
-      <Image source={{ uri: item.image }} style={styles.image}/>
+  // --- STATE VÀ ANIMATION FAB ---
+  // state dành cho menu FAB
+  const [ isOpen, setIsOpen ] = useState(false);
+  const fadeAnim = useState(new Animated.Value(0))[0];
+  const slideAnim = useState(new Animated.Value(50))[0];
+  // Chức năng mở menu FAB
+  const openMenu = () => {
+    setIsOpen(true);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 50,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 50,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+  // hàm đóng menu FAB
+  const closeMenu = () => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 50,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 50,
+        duration: 50,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+    ]).start(() => {setIsOpen(false);});
+  };
+
+  // Chức năng xóa sản phẩm
+  const handleDelete = async (id: number) => {
+    confirm({
+      title: "Thông báo",
+      message: "Bạn có chắc chắn muốn xóa sản phẩm này?",
+      onConfirm: async () => {
+        try {
+          await ProductApi.remove(id);
+          success("Xóa sản phẩm thành công!");
+        } catch (err: any) {
+          error("Xóa sản phẩm thất bại!");
+        }
+      },
+    });
+  };
+
+  // hàm render item cho flatlist
+  const renderItem = ({ item, index}: { item: ProductInterface, index: number}) => (
+    <View style={styles.itemProduct}>
+      <Text style={styles.serialNumber}>{index + 1}</Text>
+      <View style={styles.imageProductWrapper}>
+        <Image source={ item.image ? { uri: item.image } : placeholderImageProduct} style={styles.image}/>
+      </View>
+      <View style={styles.informationProduct}>
+        <Text style={styles.itemInformationProduct}>{item.name}</Text>
+        <Text style={styles.itemInformationProduct}>{item.category_name}</Text>
+        <Text style={styles.itemInformationProduct}>{Number(item.price).toLocaleString("vi-VN")} VNĐ</Text>
+      </View>
+      <View style={styles.actionProductButtons}>
+        <TouchableOpacity style={[styles.actionProductButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddProduct", { productId: item.id })}>
+          <Text style={styles.actionProductTextButton}>Sửa</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.actionProductButton, { backgroundColor: "#ff3737" }]} onPress={() => handleDelete(item.id)}>
+          <Text style={styles.actionProductTextButton}>Xóa</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   )
 
@@ -56,24 +139,14 @@ const AdminProduct = () => {
             <Icon name='search' size={16} color="#fff"/>
           </TouchableOpacity>
         </View>
-
-        <View style={styles.containerCategory}>
-          <TouchableOpacity onPress={() => navigation.navigate("AdminCategory")} style={styles.categoryButton}>
-            <Text style={styles.categoryTextButton}>Danh mục</Text>
-            <Icon name='caret-right' style={styles.categoryIcon}/>
-          </TouchableOpacity>
-        </View>
-
-        <Text style={styles.titleListProduct}>Danh sách sản phẩm</Text>
-
-        {products ? (
-          <View>
-            <FlatList
-              data={products}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.id.toString()}
-            />
-          </View>
+        
+        {products.length > 0 ? (
+          <FlatList
+            data={products}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id.toString()}
+            style={{ padding: 5, marginTop: 5, }}
+          />
         ) : (
           <View style={styles.listNoProduct}>
             <Icon name='utensils' size={80} color="#1ABDBE"/>
@@ -82,10 +155,41 @@ const AdminProduct = () => {
         )}
 
       </View>
+      
+      
 
-      <TouchableOpacity style={styles.fabButton} onPress={() => navigation.navigate('AdminAddProduct')}>
-        <Icon name='plus' size={24} color='#fff'/>
+      {/* Nút FAB */}
+      <TouchableOpacity style={styles.fabButton} onPress={() => (isOpen ? closeMenu() : openMenu() )}>
+        <Icon name={isOpen ? 'times' : 'plus'} size={24} color='#fff'/>
       </TouchableOpacity>
+
+      {/* --- OVERLAY --- */}
+      <Animated.View style={[ styles.overlay, { opacity: fadeAnim }]} pointerEvents={isOpen ? "auto" : "none"}>
+        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={closeMenu}/>
+      </Animated.View>
+
+      {/* --- MENU TRƯỢT LÊN --- */}
+      {/* Menu các lựa chon khi nhấn nút FAB (nút +) */}
+      <View style={styles.containerMenuOptionFab} pointerEvents={isOpen ? "auto" : "none"}>
+        <Animated.View style={{
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            }}
+        >
+          <View style={styles.itemFab}>
+            <Text style={styles.itemFabLabel}>Thêm sản phẩm</Text>
+            <TouchableOpacity style={[styles.itemFabButton, { backgroundColor: "#ffb92d" }]} onPress={() => { closeMenu(); navigation.navigate('AdminAddProduct', {}) }}>
+              <Icon name='utensils' size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.itemFab}>
+            <Text style={styles.itemFabLabel}>Thêm danh mục</Text>
+            <TouchableOpacity style={[styles.itemFabButton, { backgroundColor: "#0080FF" }]} onPress={() => { closeMenu(); navigation.navigate('AdminCategory') }}>
+              <Icon name='th-large' size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </View>
     </>
   )
 }
@@ -97,35 +201,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     flexGrow: 1,
-    backgroundColor: "#fff",
-  },
-  
-  // Category button styles
-  containerCategory: {
-    display: "flex",
-    alignItems: "center",
-    marginTop: 16,
-    elevation: 5,
-  },
-  categoryButton: {
-    flexDirection: "row",
-    backgroundColor: "#1ABDBE",
-    padding: 10,
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 5,
-  },
-  categoryTextButton: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  categoryIcon: {
-    fontSize: 16,
-    color: "#fff",
-    marginLeft: 20,
+    backgroundColor: "#CEE1E6",
   },
 
   // icon thông báo
@@ -164,7 +240,7 @@ const styles = StyleSheet.create({
     borderColor: "#1ABDBE",
   },
 
-  // FAB button
+  // style FAB button + menu option
   fabButton: {
     position: "absolute",
     bottom: 24,
@@ -178,15 +254,46 @@ const styles = StyleSheet.create({
     elevation: 5,
     zIndex: 999,
   },
+  overlay: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    right: 0,
+    left: 0,
+    backgroundColor: "rgba(235, 229, 229, 0.4)",
+    zIndex: 900,
+  },
+  containerMenuOptionFab: {
+    position: "absolute",
+    bottom: 90,
+    right: 24,
+    zIndex: 999,
+  },
+  itemFab: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    marginBottom: 16,
+  },
+  itemFabLabel: {
+    marginRight: 12,
+    backgroundColor: "#fff",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    fontSize: 16,
+    elevation: 1,
+  },
+  itemFabButton: {
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 1,
+  },
 
   // style list product
-  titleListProduct: {
-    textAlign: "center",
-    marginTop: 16,
-    fontSize: 24,
-    color: "#1ABDBE",
-    fontWeight: "bold",
-  },
   listNoProduct: {
     flex: 1,
     width: "100%",
@@ -201,8 +308,52 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
+  // style cho từng item product
+  itemProduct:{
+    marginTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#fff",
+    borderRadius: 5,
+    elevation: 5,
+  },
+  serialNumber: {
+    flex: 0.7,
+    paddingVertical: 5,
+    fontSize: 16,
+  },
+  imageProductWrapper: {
+    flex: 1,
+    justifyContent: "center",
+  },
   image: {
-    width: 40,
-    height: 30,
-  }
+    width: 45,
+    height: 45,
+  },
+  informationProduct: {
+    flex: 3,
+    paddingLeft: 10,
+    justifyContent: "center",
+  },
+  itemInformationProduct: {
+    fontSize: 16,
+  },
+  actionProductButtons: {
+    flex: 1.3,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 6,
+  },
+  actionProductButton: {
+    padding: 5,
+    borderRadius: 3,
+  },
+  actionProductTextButton: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+
 })

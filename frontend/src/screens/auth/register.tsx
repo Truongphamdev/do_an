@@ -115,7 +115,7 @@ export default Register
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#AFE5E5',
+    backgroundColor: '#CEE1E6',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,

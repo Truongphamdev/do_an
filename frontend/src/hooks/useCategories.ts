@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { CategoryApi, type Category } from "../api/category.api";
+import { CategoryApi, type CategoryInterface } from "../api/category.api";
 
 export const useCategories = () => {
-    const [ categories, setCategories ] = useState<Category[]>([]);
+    const [ categories, setCategories ] = useState<CategoryInterface[]>([]);
     const [ loading, setLoading ] = useState(true);
 
     useEffect(() => {
