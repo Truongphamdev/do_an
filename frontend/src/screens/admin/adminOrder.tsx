@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
-import AdminHeader from '../../components/adminHeader'
+import { AdminHeader } from '../../components'
 
 const AdminOrder = () => {
   return (

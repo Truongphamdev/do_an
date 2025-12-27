@@ -14,9 +14,10 @@ interface AppDropdownProps<T extends string | number> {
   options: Option[];
   label?: string;
   error?: string;
+  style?: any;
 }
 
-export const AppDropdown = <T extends string | number>({ name, control, options, label, error }: AppDropdownProps<T>) => {
+export const AppDropdown = <T extends string | number>({ name, control, options, label, error, style }: AppDropdownProps<T>) => {
   return (
     <View style={styles.container}>
       {error && (
@@ -28,7 +29,10 @@ export const AppDropdown = <T extends string | number>({ name, control, options,
         render={({ field: { onChange, value } }) => (
           <View>
             <Dropdown
-              style={styles.dropdown}
+              style={[
+                styles.dropdown,
+                style,
+              ]}
               data={options}
               labelField="label"
               valueField="value"

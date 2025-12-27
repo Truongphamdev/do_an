@@ -7,6 +7,7 @@ export interface ProductInterface {
     price: number;
     category: number;
     category_name?: string;
+    status: "available" | "unavailable",
     created_at?: string;
     updated_at?: string;
 
@@ -24,7 +25,7 @@ export interface ProductImage {
 }
 
 // utility types tạo kiểu con thích hợp cho create/update
-type ProductCreate = Omit<ProductInterface, "id" | "created_at" | "updated_at" | "category_id" > & { image?: ProductImage };
+type ProductCreate = Omit<ProductInterface, "id" | "created_at" | "updated_at" | "category_id" | "status" > & { image?: ProductImage };
 type ProductUpdate = Partial<ProductCreate>;
 
 export const ProductApi = {
@@ -36,13 +37,6 @@ export const ProductApi = {
     async getById(id: number): Promise<ProductInterface> {
         const { data: product } = await api.get<ProductInterface>(`/products/${id}`);
         return product;
-    },
-
-    async getByCategory(category_id: number): Promise<ProductInterface[]> {
-        const { data: productsByCategory } = await api.get<ProductInterface[]>("/products/product_filter", {
-            params: { category_id }
-        });
-        return productsByCategory;
     },
 
     async create(payload: ProductCreate): Promise<ProductInterface> {
@@ -60,7 +54,13 @@ export const ProductApi = {
             } as any);
         }
 
-        const { data: newProduct } = await api.post<ProductInterface>("/products/", formData, { headers: { "Content-Type": "multipart/form-data" } });
+        const { data: newProduct } = await api.post<ProductInterface>(
+            "/products/",
+            formData,
+            {
+                headers: { "Content-Type": "multipart/form-data" },
+            }
+        );
         return newProduct;
     },
 
@@ -81,7 +81,15 @@ export const ProductApi = {
                 type: payload.image.type || "image/jpeg",
             } as any);
 
-            const { data } = await api.put<ProductInterface>(`/products/${productId}/`, formData);
+            const { data } = await api.put<ProductInterface>(
+                `/products/${productId}/`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
             updatedProduct = data;
         } else {
             // trường hợp không có ảnh mới
@@ -91,7 +99,26 @@ export const ProductApi = {
         return updatedProduct;
     },
 
+    async updateStatus(id: number, status: "available" | "unavailable"): Promise<ProductInterface> {
+        const { data: updatedProduct } = await api.put<ProductInterface>(`/products/${id}/status/`, { status });
+        return updatedProduct;
+    },
+
     async remove(id: number): Promise<void> {
         await api.delete(`/products/${id}/`);
     },
+
+    // Api cho phần search, filter
+    async getList(params?: {
+        search?: string;
+        category?: number;
+        status?: "available" | "unavailable";
+        min_price?: number | string;
+        max_price?: number | string;
+    }): Promise<ProductInterface[]> {
+        const { data: newList } = await api.get<ProductInterface[]>("/products/", {
+            params,
+        });
+        return newList;
+    }
 }

@@ -1,12 +1,21 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, TextInput, Animated, Easing } from 'react-native'
-import React, { useState, useEffect } from 'react'
-import AdminHeader from '../../components/adminHeader'
-import { useNavigation } from '@react-navigation/native'
+import React, { useState, useCallback, useEffect } from 'react'
+// componet tái sử dụng
+import { AppStatusSwitch, AdminHeader } from '../../components'
+// navigation
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { AdminStackParamList } from '../../navigation/adminStackNavigation'
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
+// icon
 import Icon from "react-native-vector-icons/FontAwesome5"
+// api
 import { ProductApi, type ProductInterface } from '../../api/product.api'
+// thông báo
 import { useNotify } from '../../providers/notificationProvider'
+// hook
+import { useCategories } from '../../hooks/useCategories'
+// webSocket
+import { useWebSocket } from '../../hooks/useWebsocket'
 
 // ảnh mặc định khi ko lấy được dữ liệu ảnh
 const placeholderImageProduct = require("../../assets/images/placeholderProduct.png");
@@ -14,47 +23,142 @@ const placeholderImageProduct = require("../../assets/images/placeholderProduct.
 
 const AdminProduct = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
-  const [ search, setSearch ] = useState("");
   const [ products, setProducts ] = useState<ProductInterface[]>([]);
   const { success, error, confirm } = useNotify();
 
-  // Khi khởi động màn hình app thì gọi các hàm trong useEffect
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  const [ search, setSearch ] = useState("");
+  const [ selectedCategory, setSelectedCategory ] = useState<number | null>(null);
+  const { categories } = useCategories();
+  const [ minPrice, setMinPrice ] = useState<string>("");
+  const [ maxPrice, setMaxPrice ] = useState<string>("");
+  const [ selectedPriceRange, setSelectedPriceRange ] = useState<number >(0);
 
   // Hàm lấy danh sách sản phẩm
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
-      const data = await ProductApi.getAll();
+      const products = await ProductApi.getList({
+        search: search.trim() || undefined,
+        category: selectedCategory ?? undefined,
+        min_price: minPrice ? Number(minPrice) : undefined,
+        max_price: maxPrice ? Number(maxPrice) : undefined,
+      }); 
       
-      const productWithImages = data.map(product => ({
+      const productWithImages = products.map(product => ({
         ...product,
         image: product.image_url ?? "https://via.placeholder.com/40x30"
       }));
 
-      setProducts(productWithImages);
+      const sorted = [...productWithImages].sort((a, b) => {
+        const ta = Date.parse(a.created_at ?? "") || 0;
+        const tb = Date.parse(b.created_at ?? "") || 0;
+        return tb - ta;
+      });
+
+      setProducts(sorted);
     } catch (err: any) {
       error("Lấy danh sách sản phẩm thất bại!");
     }
-  }
+  }, [search, selectedCategory, minPrice, maxPrice]);
+
+  // Khi khởi động màn hình app thì gọi các hàm trong useEffect
+  useFocusEffect(
+    useCallback(() => {
+      fetchProducts();
+    }, [fetchProducts])
+  );
+
+  // Realtime search
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      fetchProducts();
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [search, selectedCategory, minPrice, maxPrice, fetchProducts]);
+
+  // --- REALTIME PRODUCT ---
+  useWebSocket((message) => {
+    console.log("📌 Realtime product:", message);
+
+    switch(message.type) {
+      case "PRODUCT_CREATED":
+        setProducts(prev => [
+          {
+            ...message.product,
+            image: message.product.image_url ?? "https://via.placeholder.com/40x30"
+          },
+          ...prev,
+        ]);
+        break;
+        
+      case "PRODUCT_UPDATED":
+        setProducts(prev =>
+          prev.map(item =>
+            item.id === message.product.id
+            ? {
+                ...message.product,
+                image: message.product.image_url ?? "https://via.placeholder.com/40x30"
+              }
+            : item
+          )
+        );
+        break;
+
+      case "PRODUCT_DELETED":
+        setProducts(prev => prev.filter(item => item.id !== message.id));
+        break;
+
+      default:
+        console.log("❓ Unknown realtime type", message.type);
+    }
+  }, 'ws://10.0.2.2:8000/ws/products/');
+
+  // --- REALTIME IMAGE UPDATE ---
+  useWebSocket((message) => {
+    console.log("📌 Realtime image:", message);
+
+    if (message.type === "IMAGE_UPDATED" || message.type === "IMAGE_CREATED") {
+      setProducts(prev =>
+        prev.map(item =>
+          item.id === message.product_id
+          ? {
+              ...item,
+              image: message.image_url ?? "https://via.placeholder.com/40x30"
+            }
+          : item
+        )
+      );
+    }
+    if (message.type === "IMAGE_DELETED") {
+      setProducts(prev =>
+        prev.map(item =>
+          item.id === message.product_id
+          ? {
+            ...item,
+            image: message.was_primary ? "https://via.placeholder.com/40x30" : item.image
+          }
+          : item
+        )
+      )
+    }
+  }, 'ws://10.0.2.2:8000/ws/images/');
 
   // --- STATE VÀ ANIMATION FAB ---
   // state dành cho menu FAB
-  const [ isOpen, setIsOpen ] = useState(false);
-  const fadeAnim = useState(new Animated.Value(0))[0];
-  const slideAnim = useState(new Animated.Value(50))[0];
+  const [ fabOpen, setFabOpen ] = useState(false);
+  const fabFade = useState(new Animated.Value(0))[0];
+  const fabAnim = useState(new Animated.Value(50))[0];
   // Chức năng mở menu FAB
-  const openMenu = () => {
-    setIsOpen(true);
+  const openMenuFab = () => {
+    setFabOpen(true);
     Animated.parallel([
-      Animated.timing(fadeAnim, {
+      Animated.timing(fabFade, {
         toValue: 1,
         duration: 50,
         easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
-      Animated.timing(slideAnim, {
+      Animated.timing(fabAnim, {
         toValue: 0,
         duration: 50,
         easing: Easing.out(Easing.quad),
@@ -63,22 +167,60 @@ const AdminProduct = () => {
     ]).start();
   };
   // hàm đóng menu FAB
-  const closeMenu = () => {
+  const closeMenuFab = () => {
     Animated.parallel([
-      Animated.timing(fadeAnim, {
+      Animated.timing(fabFade, {
         toValue: 0,
         duration: 50,
         easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
-      Animated.timing(slideAnim, {
+      Animated.timing(fabAnim, {
         toValue: 50,
         duration: 50,
         easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
-    ]).start(() => {setIsOpen(false);});
+    ]).start(() => {setFabOpen(false);});
   };
+
+  // --- STATE VÀ ANIMATION MENU FILTER ---
+  // state dành cho menu filter
+  const [ filterOpen, setFilterOpen ] = useState(false);
+  const filterAnim = useState(new Animated.Value(300))[0]; // từ ngoài màn
+  const filterFade = useState(new Animated.Value(0))[0];
+  // chức năng mở menu filter
+  const openMenuFilter = () => {
+    setFilterOpen(true);
+    Animated.parallel([
+      Animated.timing(filterAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(filterFade, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+  // chức năng đóng menu filter
+  const closeMenuFilter = () => {
+    Animated.parallel([
+      Animated.timing(filterAnim, {
+        toValue: 300,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(filterFade, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => setFilterOpen(false));
+  };
+
 
   // Chức năng xóa sản phẩm
   const handleDelete = async (id: number) => {
@@ -96,9 +238,64 @@ const AdminProduct = () => {
     });
   };
 
+
+  // Chức năng cập nhật trạng thái sản phẩm
+  const handleToggleStatus = async (id: number) => {
+    try {
+      const product = products.find(prev => prev.id === id);
+      if (!product) return;
+
+      const newStatus = product.status === "available" ? "unavailable" : "available";
+
+      await ProductApi.updateStatus(id, newStatus);
+    } catch (err: any) {
+      error("Cập nhật trạng thái sản phẩm thất bại!");
+    }
+  }
+
+
+  // Mảng khoảng giá
+  const PRICE_RANGE = [
+    { label: "Tất cả", min: null, max: null },
+    { label: "< 100.000đ", min: 0, max: 100000 },
+    { label: "100.000đ - 200.000đ", min: 100000, max: 200000 },
+    { label: "200.000đ - 300.000đ", min: 200000, max: 300000 },
+    { label: "> 300.000đ", min: 300000, max: null },
+  ];
+  // hàm chọn khoảng giá
+  const handleSelectedPriceRange = (index: number) => {
+    const range = PRICE_RANGE[index];
+    setSelectedPriceRange(index);
+
+    if (range.min === null && range.max === null) {
+      setMinPrice("");
+      setMaxPrice("");
+    } else {
+      setMinPrice(range.min !== null ? String(range.min) : "");
+      setMaxPrice(range.max !== null ? String(range.max) : "");
+    }
+  }
+
+
+  // hàm reset phần filter
+  const handleResetFilter = () => {
+    setMinPrice("");
+    setMaxPrice("");
+    setSelectedCategory(null);
+    setSelectedPriceRange(0);
+    setFilterOpen(false);
+
+    fetchProducts();
+  }
+
+
   // hàm render item cho flatlist
   const renderItem = ({ item, index}: { item: ProductInterface, index: number}) => (
-    <View style={styles.itemProduct}>
+    <TouchableOpacity
+      style={styles.itemProduct}
+      onPress={() => navigation.navigate("ProductDetail", { productId: item.id })}
+      activeOpacity={0.7}
+    >
       <Text style={styles.serialNumber}>{index + 1}</Text>
       <View style={styles.imageProductWrapper}>
         <Image source={ item.image ? { uri: item.image } : placeholderImageProduct} style={styles.image}/>
@@ -109,14 +306,22 @@ const AdminProduct = () => {
         <Text style={styles.itemInformationProduct}>{Number(item.price).toLocaleString("vi-VN")} VNĐ</Text>
       </View>
       <View style={styles.actionProductButtons}>
-        <TouchableOpacity style={[styles.actionProductButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddProduct", { productId: item.id })}>
-          <Text style={styles.actionProductTextButton}>Sửa</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionProductButton, { backgroundColor: "#ff3737" }]} onPress={() => handleDelete(item.id)}>
-          <Text style={styles.actionProductTextButton}>Xóa</Text>
-        </TouchableOpacity>
+        <View style={styles.addAndEditButton}>
+          <TouchableOpacity style={[styles.actionProductButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddProduct", { productId: item.id })}>
+            <Text style={styles.actionProductTextButton}>Sửa</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.actionProductButton, { backgroundColor: "#ff3737" }]} onPress={() => handleDelete(item.id)}>
+            <Text style={styles.actionProductTextButton}>Xóa</Text>
+          </TouchableOpacity>
+        </View>
+        <AppStatusSwitch
+          onToggle={() => handleToggleStatus(item.id)}
+          value={item.status === "available"}
+          style={styles.swithButton}
+          textStyle={{ color: item.status === "available" ? "#1ABDBE" : "#6d6d6d" }}
+        />
       </View>
-    </View>
+    </TouchableOpacity>
   )
 
   return (
@@ -124,19 +329,20 @@ const AdminProduct = () => {
       <View style={styles.container}>
         <AdminHeader
           title='Quản lý sản phẩm'
-          showBell
-          style={styles.iconBell}
         />
 
-        <View style={styles.containerSearch}>
+        <View style={styles.boxSearch}>
           <TextInput
             value={search}
             onChangeText={(text) => setSearch(text)}
             placeholder='Tìm kiếm'
             style={styles.searchInput}
           />
-          <TouchableOpacity onPress={undefined} style={styles.searchButton}>
-            <Icon name='search' size={16} color="#fff"/>
+          <TouchableOpacity onPress={fetchProducts} style={styles.searchButton}>
+            <Icon name='search' size={16} color="#909090"/>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={openMenuFilter} style={styles.filterButton}>
+            <Icon name='filter' size={16} color="#909090"/>
           </TouchableOpacity>
         </View>
         
@@ -157,39 +363,161 @@ const AdminProduct = () => {
       </View>
       
       
-
+      {/* MUNE BUTTON FAB */}
       {/* Nút FAB */}
-      <TouchableOpacity style={styles.fabButton} onPress={() => (isOpen ? closeMenu() : openMenu() )}>
-        <Icon name={isOpen ? 'times' : 'plus'} size={24} color='#fff'/>
+      <TouchableOpacity style={styles.fabButton} onPress={() => (fabOpen ? closeMenuFab() : openMenuFab() )}>
+        <Icon name={fabOpen ? 'times' : 'plus'} size={24} color='#fff'/>
       </TouchableOpacity>
 
       {/* --- OVERLAY --- */}
-      <Animated.View style={[ styles.overlay, { opacity: fadeAnim }]} pointerEvents={isOpen ? "auto" : "none"}>
-        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={closeMenu}/>
+      <Animated.View style={[ styles.overlayFab, { opacity: fabFade }]} pointerEvents={fabOpen ? "auto" : "none"}>
+        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={closeMenuFab}/>
       </Animated.View>
 
       {/* --- MENU TRƯỢT LÊN --- */}
       {/* Menu các lựa chon khi nhấn nút FAB (nút +) */}
-      <View style={styles.containerMenuOptionFab} pointerEvents={isOpen ? "auto" : "none"}>
+      <View style={styles.containerMenuFab} pointerEvents={fabOpen ? "auto" : "none"}>
         <Animated.View style={{
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
+              opacity: fabFade,
+              transform: [{ translateY: fabAnim }],
             }}
         >
           <View style={styles.itemFab}>
             <Text style={styles.itemFabLabel}>Thêm sản phẩm</Text>
-            <TouchableOpacity style={[styles.itemFabButton, { backgroundColor: "#ffb92d" }]} onPress={() => { closeMenu(); navigation.navigate('AdminAddProduct', {}) }}>
+            <TouchableOpacity style={[styles.itemFabButton, { backgroundColor: "#ffb92d" }]} onPress={() => { closeMenuFab(); navigation.navigate('AdminAddProduct', {}) }}>
               <Icon name='utensils' size={24} color="#fff" />
             </TouchableOpacity>
           </View>
           <View style={styles.itemFab}>
-            <Text style={styles.itemFabLabel}>Thêm danh mục</Text>
-            <TouchableOpacity style={[styles.itemFabButton, { backgroundColor: "#0080FF" }]} onPress={() => { closeMenu(); navigation.navigate('AdminCategory') }}>
+            <Text style={styles.itemFabLabel}>Quản lý danh mục</Text>
+            <TouchableOpacity style={[styles.itemFabButton, { backgroundColor: "#0080FF" }]} onPress={() => { closeMenuFab(); navigation.navigate('AdminCategory') }}>
               <Icon name='th-large' size={24} color="#fff" />
             </TouchableOpacity>
           </View>
         </Animated.View>
       </View>
+
+      {filterOpen && (
+        <>
+          {/* MENU FILTER */}
+          {/* OVERLAY */}
+          <Animated.View style={[ styles.overlayFilter, { opacity: filterFade }]} pointerEvents={filterOpen ? "auto" : "none"}>
+            <TouchableOpacity style={{ flex: 1, }} activeOpacity={1} onPress={closeMenuFilter} />
+          </Animated.View>
+          
+          {/* --- MENU TRƯỢT TỪ PHẢI SANG --- */}
+          <Animated.View
+            style={[
+              styles.containerMenuFilter,
+              {
+                opacity: filterFade,
+                transform: [{ translateX: filterAnim }],
+              }
+            ]}
+          >
+            <Text style={styles.filterTitle}>Lọc</Text>
+            {/* filter theo category */}
+            <Text style={styles.filterOptionTitle}>Lọc theo danh mục</Text>
+            <View style={styles.filterCategoryList}>
+              <TouchableOpacity
+                style={[
+                  styles.filterCategoryItem,
+                  selectedCategory === null && styles.filterCategoryActive
+                ]}
+                onPress={() => setSelectedCategory(null)}
+              >
+                <Text
+                  style={[
+                    styles.filterCategoryText,
+                    selectedCategory === null && { color: "#fff", fontWeight: "bold" }
+                  ]}
+                >
+                  Tất cả
+                </Text>
+              </TouchableOpacity>
+
+                {categories.map(cate => (
+                  <TouchableOpacity
+                    key={cate.id}
+                    style={[
+                      styles.filterCategoryItem,
+                      selectedCategory === cate.id && styles.filterCategoryActive
+                    ]}
+                    onPress={() => setSelectedCategory(cate.id)}
+                  >
+                    <Text
+                      style={[
+                        styles.filterCategoryText,
+                        selectedCategory === cate.id && { color: "#fff", fontWeight: "bold" }
+                      ]}
+                    >
+                      {cate.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+            </View>
+
+            {/* filter theo vùng giá */}
+            <Text style={styles.filterOptionTitle}>Lọc theo giá</Text>
+            <View style={styles.filterPrice}>
+              <View style={styles.filterPriceItem}>
+                <Text style={styles.filterPriceLabel}>Từ:</Text>
+                <TextInput
+                  keyboardType="numeric"
+                  value={minPrice}
+                  onChangeText={(text) => {
+                    setMinPrice(text);
+                    setSelectedPriceRange(-1);
+                  }}
+                  style={styles.filterPriceValue}
+                />
+              </View>
+              <View style={styles.filterPriceItem}>
+                <Text style={styles.filterPriceLabel}>Đến:</Text>
+                <TextInput
+                  keyboardType="numeric"
+                  value={maxPrice}
+                  onChangeText={(text) => {
+                    setMaxPrice(text);
+                    setSelectedPriceRange(-1);
+                  }}
+                  style={styles.filterPriceValue}
+                />
+              </View>
+            </View>
+
+            <View style={styles.filterPriceRange}>
+                {PRICE_RANGE.map((item, index) => (
+                  <TouchableOpacity
+                    style={[
+                      styles.filterPriceRangeItem,
+                      selectedPriceRange === index && styles.filterPriceRangeActive
+                    ]}
+                    onPress={() => handleSelectedPriceRange(index)}
+                  >
+                    <Text
+                      style={[
+                        styles.filterPriceRangeText,
+                        selectedPriceRange === index && { color: "#fff", fontWeight: "bold" }
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+            </View>
+
+            <View style={styles.filterActionButtons}>
+              <TouchableOpacity style={[styles.filterActionButton, { backgroundColor: "#909090" }]} onPress={handleResetFilter}>
+                <Text style={styles.filterActionTextButton}>Huỷ</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.filterActionButton, { backgroundColor: "#FCB35E" }]} onPress={fetchProducts}>
+                <Text style={styles.filterActionTextButton}>Áp dụng</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </>
+      )}
     </>
   )
 }
@@ -201,43 +529,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     flexGrow: 1,
-    backgroundColor: "#CEE1E6",
-  },
-
-  // icon thông báo
-  iconBell: {
-    color: "#b1b1b1",
+    backgroundColor: "#e1f3f8",
   },
 
   // input tìm kiếm
-  containerSearch: {
+  boxSearch: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
     height: 42,
-    elevation: 5,
   },
   searchInput: {
     flex: 3,
     backgroundColor: "#fff",
     paddingHorizontal: 16,
-    height: "100%",
     borderTopLeftRadius: 5,
     borderBottomLeftRadius: 5,
-    borderWidth: 2,
-    borderColor: "#1ABDBE",
+    height: "100%",
+    elevation: 5,
   },
   searchButton: {
-    flex: 1,
+    flex: 0.5,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#1ABDBE",
+    backgroundColor: "#fff",
+    height: "100%",
+    elevation: 5,
+  },
+  filterButton: {
+    flex: 0.5,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
     height: "100%",
     borderTopRightRadius: 5,
     borderBottomRightRadius: 5,
-    borderWidth: 2,
-    borderColor: "#1ABDBE",
+    elevation: 5,
   },
 
   // style FAB button + menu option
@@ -254,7 +582,7 @@ const styles = StyleSheet.create({
     elevation: 5,
     zIndex: 999,
   },
-  overlay: {
+  overlayFab: {
     position: "absolute",
     top: 0,
     bottom: 0,
@@ -263,7 +591,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(235, 229, 229, 0.4)",
     zIndex: 900,
   },
-  containerMenuOptionFab: {
+  containerMenuFab: {
     position: "absolute",
     bottom: 90,
     right: 24,
@@ -291,6 +619,121 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     elevation: 1,
+  },
+
+  // style filter
+  overlayFilter: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    right: 0,
+    left: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.4)",
+    zIndex: 900,
+  },
+  containerMenuFilter: {
+    position: "absolute",
+    backgroundColor: "#fff",
+    top: 0,
+    right: 0,
+    width: 260,
+    zIndex: 999,
+    elevation: 5,
+  },
+  filterTitle: {
+    fontSize: 28,
+    padding: 10,
+    fontWeight: "900",
+    color: "#fff",
+    backgroundColor: "#1ABDBE",
+  },
+  filterOptionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#1ABDBE",
+    marginTop: 8,
+    marginLeft: 10,
+  },
+  filterCategoryList: {
+    padding: 10,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  filterCategoryItem: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "#909090",
+  },
+  filterCategoryActive: {
+    backgroundColor: "#1ABDBE",
+    borderColor: "#1ABDBE",
+  },
+  filterCategoryText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  filterPrice: {
+    padding: 10,
+    flexDirection: "row",
+    gap: 8,
+  },
+  filterPriceItem: {
+    width: '48%',
+  },
+  filterPriceLabel: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 4,
+    color: "#333",
+  },
+  filterPriceValue: {
+    padding: 5,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "#909090",
+    fontSize: 16,
+  },
+  filterPriceRange: {
+    padding: 10,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  filterPriceRangeItem: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: "#909090",
+  },
+  filterPriceRangeActive: {
+    backgroundColor: "#1ABDBE",
+    borderColor: "#1ABDBE",
+  },
+  filterPriceRangeText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  filterActionButtons: {
+    marginTop: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 10,
+  },
+  filterActionButton: {
+    width: '40%',
+    borderRadius: 3,
+    padding: 5,
+  },
+  filterActionTextButton: {
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "#fff",
   },
 
   // style list product
@@ -328,8 +771,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   image: {
-    width: 45,
-    height: 45,
+    width: 50,
+    height: 50,
   },
   informationProduct: {
     flex: 3,
@@ -340,20 +783,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   actionProductButtons: {
-    flex: 1.3,
-    flexDirection: "row",
+    flex: 1.6,
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-end",
     gap: 6,
   },
+  addAndEditButton: {
+    flexDirection: "row",
+    gap: 6,
+  },
   actionProductButton: {
+    width: '45%',
     padding: 5,
     borderRadius: 3,
   },
   actionProductTextButton: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#fff",
+    textAlign: "center",
   },
-
+  swithButton: {
+    width: '100%',
+    padding: 5,
+  },
 })

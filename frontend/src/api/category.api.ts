@@ -18,6 +18,11 @@ export const CategoryApi = {
         return categories;
     },
 
+    async getById(id: number): Promise<CategoryInterface> {
+        const { data: category } = await api.get<CategoryInterface>(`/categories/${id}`);
+        return category;
+    },
+
     async create(payload: CategoryCreate): Promise<CategoryInterface> {
         const { data: newCategory } = await api.post<CategoryInterface>("/categories", payload);
         return newCategory;

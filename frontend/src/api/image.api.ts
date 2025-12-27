@@ -37,7 +37,14 @@ export const ImageApi = {
             name: payload.image.fileName || "image.jpg",
             type: payload.image.type || "image/jpeg",
         });
-        const { data: image } = await api.post<ImageInterface>(`/products/${productId}/images`, formData, { headers: { "Content-Type": "multipart/form-data" }} );
+        const { data: image } = await api.post<ImageInterface>(
+            `/products/${productId}/images`,
+            formData,
+            {
+                headers: { "Content-Type": "multipart/form-data" },
+                _skipAuthRefresh: true,
+            } 
+        );
         return image;
     },
 
@@ -47,7 +54,7 @@ export const ImageApi = {
         if (payload.image && isRNfile(payload.image)) {
             const formData = new FormData();
 
-            // Kiểm tra để tranh undefined thuộc tính is_primary
+            // Kiểm tra để tránh undefined thuộc tính is_primary
             if (payload.is_primary !== undefined) formData.append("is_primary", String(payload.is_primary));
 
             formData.append("image", {
@@ -55,11 +62,18 @@ export const ImageApi = {
                 name: payload.image.fileName || "image.jpg",
                 type: payload.image.type || "image/jpeg",
             });
-            const { data } = await api.put<ImageInterface>(`/products/${productId}/images/${id}`, formData, { headers: { "Content-Type": "multipart/form-data" }} );
+            const { data } = await api.put<ImageInterface>(
+                `/products/${productId}/images/${id}`,
+                formData,
+                {
+                    headers: { "Content-Type": "multipart/form-data" },
+                    _skipAuthRefresh: true,
+                } 
+            );
             updatedImage = data;
         } else {
             const body: any = {};
-            // Kiểm tra để tranh undefined thuộc tính is_primary
+            // Kiểm tra để tránh undefined thuộc tính is_primary
             if (payload.is_primary !== undefined) body.is_primary = payload.is_primary;
 
             const { data } = await api.put<ImageInterface>(`/products/${productId}/images/${id}`, body);

@@ -10,3 +10,6 @@ from .admin.order import AdminOrderViewSet
 from .cashier.order import OrderCashierViewSet
 from .payment.payment import CreateQRView, sepay_webhook, CheckPaymentStatusView
 from .invoice.invoice import InvoiceViewSet
+
+# mới
+from .user.user import UserViewSet

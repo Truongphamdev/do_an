@@ -29,7 +29,15 @@ class CreateCategoryViewSet(viewsets.ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     def destroy(self, request, pk=None):
         category = get_object_or_404(Category, pk=pk)
+        # Lưu trước khi xóa
+        category_data = CategorySerializer(category).data
         if category:
             category.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({'error': 'Không tìm thấy danh mục.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    # -----------
+    def retrieve(self, request, pk=None):
+        category = get_object_or_404(Category, pk=pk)
+        serializer = CategorySerializer(category)
+        return Response(serializer.data, status=status.HTTP_200_OK)

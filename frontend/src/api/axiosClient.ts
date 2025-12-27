@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { AxiosRequestConfig, AxiosError } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApi } from "./auth.api";
 
@@ -11,6 +11,7 @@ interface QueueItem {
 // Extend AxiosRequestConfig để thêm _retry optional
 interface CustomRequestConfig extends AxiosRequestConfig {
     _retry?: boolean; // _retry: để đánh dấu xem reqest này đã thử refresh token 1 lần chưa, tránh lặp vô hạn
+    _skipAuthRefresh?: boolean;
 }
 
 // Khởi tạo Axios instance
@@ -49,8 +50,28 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config as CustomRequestConfig;
 
+        // Tránh crash khi error.config undefined
+        if (!originalRequest) {
+            return Promise.reject(error);
+        }
+
+        // Không refresh token cho request login / refresh
+        if (
+            originalRequest.url?.includes("/auth/login") ||
+            originalRequest.url?.includes("/auth/refresh")
+        ) {
+            return Promise.reject(error);
+        }
+
+        // ❌ BỎ QUA refresh cho upload ảnh
+        if (originalRequest?._skipAuthRefresh) {
+            return Promise.reject(error);
+        }
+
+        const isAuthError = error.response?.status === 401
+
         // Nếu lỗi 401 và chưa retry lần nào
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (isAuthError && !originalRequest._retry) {
             if (isRefreshing) {
                 // Nếu đang refresh, đẩy request vào queue
                 return new Promise((resolve, reject) => {
@@ -80,16 +101,32 @@ api.interceptors.response.use(
                 processQueue(null, newAccess); // Xử lý các request đang queue
                 return api(originalRequest); // retry request vừa bị 401
             } catch (err) {
+                const axiosError = err as AxiosError<any>;
+
+                const isRefreshTokenExpired =
+                    axiosError.response?.data?.code === "token_not_valid" &&
+                    axiosError.response?.data?.detail?.toLowerCase().includes("refresh");
+
                 processQueue(err, null);
-                await AsyncStorage.removeItem("access_token");
-                await AsyncStorage.removeItem("refresh_token");
-                await AsyncStorage.removeItem("user_info"); // logout nếu refresh thất bại
+
+                // ❗ CHỈ logout khi refresh token cũng hết hạn
+                if (isRefreshTokenExpired) {
+                    await AsyncStorage.multiRemove([
+                        "access_token",
+                        "refresh_token",
+                        "user_info",
+                    ])
+                }
                 return Promise.reject(err);
             } finally {
                 isRefreshing = false;
             }
         }
-        return Promise.reject(error); // Các lỗi khác
+        if (!error.response) {
+            return Promise.reject(error);
+        }
+
+        return Promise.reject(error);
     }
 )
 

@@ -1,13 +1,17 @@
 import { Text, View, StyleSheet } from 'react-native'
 import React, { useState } from 'react'
-import { theme } from '../../styles/theme'
-import { AppButton, AppInput, AppTextLink, AppDropdown } from '../../components'
+// components
+import { AppButton, AppInput, AppTextLink, AppLoadingOverlay } from '../../components'
+// navigation
 import { AuthNav } from '../../navigation/authNavigation'
 import { useNavigation } from '@react-navigation/native'
+// validate
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { registerSchema, type registerForm } from '../../validation/authValidation'
+// thông báo
 import { useNotify } from '../../providers/notificationProvider'
+// api
 import { authApi } from '../../api/auth.api'
 
 const Register = () => {
@@ -27,17 +31,11 @@ const Register = () => {
   const [ loading, setLoading ] = useState(false);
   const navigation = useNavigation<AuthNav>();
 
-  const ROLE_OPTIONS = [
-    { label: 'Thu ngân', value: 'cashier' },
-    { label: 'Đầu bếp', value: 'chef' },
-    { label: 'Phục vụ', value: 'waiter' },
-  ]
-
   // Hàm chức năng đăng ký
   const handleRegister = async (data: registerForm) => {
     try {
       setLoading(true);
-      const response = await authApi.register(data);
+      await authApi.register(data);
       // Thông báo
       success("Tạo tài khoản thành công!");
       // Điều hướng
@@ -58,54 +56,64 @@ const Register = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.registerBox}>
+      <View style={styles.boxInput}>
         <Text style={styles.title}>Đăng ký</Text>
-        <AppInput
-          name='username'
-          control={control}
-          placeholder='Tên tài khoản'
-          error={errors.username?.message}
-        />
-        <AppInput
-          name='first_name'
-          control={control}
-          placeholder='Họ'
-          error={errors.first_name?.message}
-        />
-        <AppInput
-          name='last_name'
-          control={control}
-          placeholder='Tên'
-          error={errors.last_name?.message}
-        />
-        <AppInput
-          name='email'
-          control={control}
-          placeholder='Email'
-          keyboardType="email-address"
-          autoCapitalize="none"
-          error={errors.email?.message}
-        />
-        <AppInput
-          name='password'
-          control={control}
-          placeholder='Mật khẩu'
-          secureTextEntry={true}
-          error={errors.password?.message}
-        />
-        <AppDropdown
-          name='role'
-          control={control}
-          options={ROLE_OPTIONS}
-          label='Chọn vai trò'
-          error={errors.role?.message}
-        />
-        <AppButton title={loading ? "Đang đăng ký" : "Đăng ký"} onPress={handleSubmit(handleRegister)} style={styles.registerButton}/>
+        <View style={styles.item}>
+          <Text style={styles.label}>Tên tài khoản</Text>
+          <AppInput
+            name='username'
+            control={control}
+            error={errors.username?.message}
+          />
+        </View>
+        <View style={styles.item}>
+          <Text style={styles.label}>Họ</Text>
+          <AppInput
+            name='first_name'
+            control={control}
+            error={errors.first_name?.message}
+          />
+        </View>
+        <View style={styles.item}>
+          <Text style={styles.label}>Tên</Text>
+          <AppInput
+            name='last_name'
+            control={control}
+            error={errors.last_name?.message}
+          />
+        </View>
+        <View style={styles.item}>
+          <Text style={styles.label}>Email</Text>
+          <AppInput
+            name='email'
+            control={control}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            error={errors.email?.message}
+          />
+        </View>
+        <View style={styles.item}>
+          <Text style={styles.label}>Mật khẩu</Text>
+          <AppInput
+            name='password'
+            control={control}
+            secureTextEntry={true}
+            error={errors.password?.message}
+          />
+        </View>
+      </View>
+      <View style={styles.boxButton}>
         <View style={styles.question}>
           <Text>Bạn đã có tài khoản?</Text>
           <AppTextLink title="Đăng nhập" onPress={() => navigation.navigate('Login')} />
         </View>
+        <AppButton title={loading ? "Đang đăng ký" : "Đăng ký"} onPress={handleSubmit(handleRegister)} style={styles.registerButton}/>
       </View>
+
+      <AppLoadingOverlay
+        visible={loading}
+        title='Đang đăng ký'
+      />
     </View>
   )
 }
@@ -115,20 +123,15 @@ export default Register
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#CEE1E6',
+    backgroundColor: "#fff",
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     padding: 20,
   },
-  registerBox: {
+  boxInput: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: "#fff",
     width: "100%",
-    padding: 20,
-    borderRadius: 10,
-    elevation: 5,
   },
   title: {
       marginBottom: 16,
@@ -136,8 +139,24 @@ const styles = StyleSheet.create({
       fontWeight: "900",
       color: "#1ABDBE",
   },
+  item: {
+    width: '100%',
+    gap: 5,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  boxButton: {
+    width: '80%',
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 30,
+  },
   registerButton: {
     backgroundColor: "#1ABDBE",
+    width: '100%',
+    alignItems: "center",
   },
   question: {
       flexDirection: 'row',

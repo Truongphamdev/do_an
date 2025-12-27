@@ -1,23 +1,32 @@
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import React, { useEffect } from 'react';
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+// naviagation
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AdminStackParamList } from '../../navigation/adminStackNavigation';
+// icon
 import Icon from "react-native-vector-icons/FontAwesome5";
-import { AppInput, AppDropdown, AppImageUploader } from '../../components';
+// component
+import { AppInput, AppTextArea, AppDropdown, AppImageUploader, AppLoadingOverlay } from '../../components';
+// thông báo
 import { useNotify } from '../../providers/notificationProvider';
+// validation
 import { ProductSchema, type productForm } from '../../validation/productValidation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+// hooks
 import { useCategories } from '../../hooks/useCategories';
+// api
 import { ProductApi } from '../../api/product.api';
-import { ImageApi, RNfile } from '../../api/image.api';
+import { ImageApi } from '../../api/image.api';
+// utils
+import { isLocalImage } from '../../utils/isLocalImage';
+import { getBackendErrorMessage } from '../../utils/getBackendError';
 
-// kiểu dữ liệu cho route.params khi nhận productId
 type AdminAddProductRouteProp = RouteProp<AdminStackParamList, 'AdminAddProduct'>;
 
 const AdminAddProduct = () => {
-    const { control, handleSubmit, formState: {errors}, setValue, watch } = useForm<productForm>({
+    const { control, handleSubmit, formState: {errors}, setValue } = useForm<productForm>({
         resolver: zodResolver(ProductSchema),
         defaultValues: {
             name: "",
@@ -29,13 +38,15 @@ const AdminAddProduct = () => {
     });
     
     const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
-    const { categories, loading } = useCategories();
+    const { categories } = useCategories();
     const { success, error } = useNotify();
+    const [ loading, setLoading ] = useState(false);
 
     // state cho phần nhận productId
     const route = useRoute<AdminAddProductRouteProp>();
     const productId = route.params?.productId;
     const isEditting = Boolean(productId);
+    const [ imageUrl, setImageUrl ] = useState<string | null>(null);
 
     useEffect(() => {
         // gọi khi có productId để sửa sản phẩm
@@ -45,6 +56,7 @@ const AdminAddProduct = () => {
     }, [productId]);
 
     const loadProductById = async ( id: number ) => {
+        setLoading(true);
         try {
             const productById = await ProductApi.getById(id);
 
@@ -53,9 +65,11 @@ const AdminAddProduct = () => {
             setValue("price", productById.price);
             setValue("category", Number(productById.category));
 
-            if (productById.image_url) setValue("image", { uri: productById.image_url } as RNfile);
+            setImageUrl(productById.image_url ?? null);
         } catch (err: any) {
             error("Không tải đc sản phẩm cần sửa!");
+        } finally {
+            setLoading(false);
         }
     }
     
@@ -66,6 +80,7 @@ const AdminAddProduct = () => {
     }));
 
     const onSubmit = async (data: productForm) => {
+        setLoading(true);
         try {
             if (isEditting) {
                 // SỬA SẢN PHẨM
@@ -78,16 +93,7 @@ const AdminAddProduct = () => {
                             category: Number(data.category),
                         });
 
-                        if (data.image) {
-                            // chức năng đảm bảo mỗi sản phẩm chỉ có 1 ảnh
-                            const existingImage = await ImageApi.getByProduct(productId);
-                            const primaryImage = existingImage.find(image => image.is_primary);
-                            if (primaryImage) await ImageApi.update(
-                                productId,
-                                primaryImage.id,
-                                { is_primary: false },
-                            );
-
+                        if (isLocalImage(data.image)) {
                             await ImageApi.create(productId, {
                                 image: data.image,
                                 is_primary: true,
@@ -96,8 +102,8 @@ const AdminAddProduct = () => {
                         success("Cập nhật sản phẩm thành công!");
                         navigation.goBack();
                     }
-                } catch (er: any) {
-                    error("Cập nhật sản phẩm thất bại");
+                } catch (err: any) {
+                    error(getBackendErrorMessage(err));
                 }
             } else {
                 // TẠO SẢN PHẨM MỚI
@@ -108,14 +114,13 @@ const AdminAddProduct = () => {
                         price: Number(data.price),
                         category: Number(data.category),
                     });
-                    success("Tạo sản phẩm thành công!");
 
                     if (data.image) {
                         await ImageApi.create(createdProduct.id, {
                             image: data.image,
                             is_primary: true,
                         });
-                        success("Tải ảnh lên thành công!");
+                        success("Tạo sản phẩm thành công!");
                     };
                     navigation.goBack();
                 } catch (err: any) {
@@ -124,72 +129,83 @@ const AdminAddProduct = () => {
             }
         } catch (err: any) {
             error("Lưu dữ liệu thất bại!");
+        } finally {
+            setLoading(false);
         }
     }
 
     return (
         <>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
-                <Icon name='arrow-left' style={styles.iconGoBack}/>
-            </TouchableOpacity>
+            <ScrollView
+                contentContainerStyle={styles.container}
+                showsVerticalScrollIndicator={false}
+            >
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
+                    <Icon name='arrow-left' style={styles.iconGoBack}/>
+                </TouchableOpacity>
 
-            <View style={styles.container}>
+                <Text style={styles.titleHeader}>{isEditting ? "Sửa sản phẩm" : "Thêm sản phẩm"}</Text>
+                <AppImageUploader
+                    name='image'
+                    control={control}
+                    imageUrl={imageUrl}
+                />
 
-                <View style={styles.containerAddProduct}>
-                    <Text style={styles.titleHeader}>{isEditting ? "Sửa sản phẩm" : "Thêm sản phẩm"}</Text>
-                    <AppImageUploader
-                        name='image'
+                <View style={styles.boxInput}>
+                    <Text style={styles.label}>Tên món:</Text>
+                    <AppInput
+                        name='name'
                         control={control}
+                        error={errors.name?.message}
+                        style={styles.input}
                     />
-
-                    <View style={styles.box}>
-                        <Text>Tên món</Text>
-                        <AppInput
-                            name='name'
-                            control={control}
-                            error={errors.name?.message}
-                        />
-                    </View>
-
-                    <View style={styles.box}>
-                        <Text>Danh mục món</Text>
-                        <AppDropdown
-                            name='category'
-                            control={control}
-                            options={CATEGORY_OPTIONS}
-                            label='chọn danh mục'
-                            error={errors.category?.message}
-                        />
-                    </View>
-
-                    <View style={styles.box}>
-                        <Text>Mô tả món</Text>
-                        <AppInput
-                            name='description'
-                            control={control}
-                            error={errors.description?.message}
-                            style={{ height: 120 }}
-                            multiline={true}
-                            numberOfLines={4}
-                        />
-                    </View>
-
-                    <View style={styles.box}>
-                        <Text>Giá món</Text>
-                        <AppInput
-                            name='price'
-                            control={control}
-                            error={errors.price?.message}
-                            keyboardType='numeric'
-                        />
-                    </View>
-
-                    <TouchableOpacity onPress={handleSubmit(onSubmit)} style={styles.button}>
-                        <Text style={styles.textButton}>{isEditting ? "Cập nhật" : "Thêm"}</Text>
-                    </TouchableOpacity>
                 </View>
-            </View>
 
+                <View style={styles.boxInput}>
+                    <Text style={styles.label}>Danh mục món:</Text>
+                    <AppDropdown
+                        name='category'
+                        control={control}
+                        options={CATEGORY_OPTIONS}
+                        label='chọn danh mục'
+                        error={errors.category?.message}
+                        style={styles.input}
+                    />
+                </View>
+
+                <View style={styles.boxInput}>
+                    <Text style={styles.label}>Mô tả món:</Text>
+                    <AppTextArea
+                        name='description'
+                        control={control}
+                        error={errors.description?.message}
+                        multiline={true}
+                        autoHeight={true}
+                        style={styles.input}
+                    />
+                </View>
+
+                <View style={styles.boxInput}>
+                    <Text style={styles.label}>Giá món:</Text>
+                    <AppInput
+                        name='price'
+                        control={control}
+                        error={errors.price?.message}
+                        keyboardType='numeric'
+                        style={styles.input}
+                    />
+                </View>
+
+                <TouchableOpacity onPress={handleSubmit(onSubmit)} style={styles.button}>
+                    <Text style={styles.textButton}>{isEditting ? "Cập nhật" : "Thêm"}</Text>
+                </TouchableOpacity>
+                
+            </ScrollView>
+
+            <AppLoadingOverlay
+                visible={loading}
+                title='Đang tải...'
+            />
         </>
     )
 }
@@ -199,8 +215,10 @@ export default AdminAddProduct
 const styles = StyleSheet.create({
     container: {
         padding: 16,
-        flexGrow: 1,
-        backgroundColor: "#CEE1E6",
+        paddingBottom: 40,
+        backgroundColor: "#fff",
+        flexDirection: "column",
+        alignItems: "center",
     },
     titleHeader: {
         fontSize: 28,
@@ -211,8 +229,8 @@ const styles = StyleSheet.create({
     },
     goBackButton: {
         position: "absolute",
-        left: 30,
-        top: 30,
+        left: 20,
+        top: 20,
         width: 50,
         height: 50,
         zIndex: 999,
@@ -223,21 +241,20 @@ const styles = StyleSheet.create({
     },
 
     // Khung nhập thông tin sản phẩm
-    containerAddProduct: {
-        backgroundColor: "#fff",
+    boxInput: {
         width: "100%",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 16,
-        borderRadius: 5,
-        elevation: 5,
     },
-    box: {
-        width: "80%",
+    label: {
+        fontSize: 16,
+        marginBottom: 5,
+    },
+    input: {
+        borderWidth: 0,
+        borderRadius: 3,
+        backgroundColor: "#f2f2f2",
     },
     button: {
-        backgroundColor: "#0080FF",
+        backgroundColor: "#1ABDBE",
         width: "50%",
         padding: 12,
         borderRadius: 5,
