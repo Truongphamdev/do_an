@@ -10,9 +10,13 @@ from django.core.exceptions import ValidationError
 
 from api.models import User, PasswordResetToken
 
+import logging
+
 class RequestPasswordResetView(APIView):
     permission_classes = []
     throttle_classes = [AnonRateThrottle]
+    
+    logger = logging.getLogger(__name__)
     
     def post(self, request):
         email = request.data.get('email')
@@ -40,9 +44,11 @@ class RequestPasswordResetView(APIView):
         token_obj = PasswordResetToken.generate_token(user)
         
         if not getattr(settings, 'FRONTEND_RESET_PASSWORD_URL', None):
+            logger.error('FRONTEND_RESET_PASSWORD_URL is not configured')
+
             return Response(
-                {'error': 'Reset URL chưa được cấu hình'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {'message': 'Nếu email tồn tại, link reset sẽ được gửi'},
+                status=status.HTTP_200_OK
             )
             
         reset_link = (

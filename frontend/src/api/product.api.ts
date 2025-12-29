@@ -11,7 +11,6 @@ export interface ProductInterface {
     created_at?: string;
     updated_at?: string;
 
-    // cấu hình khi dữ liệu được trả về
     // image dùng cho chức năng upload
     image?: string;
     // image_url dùng cho hiển thị

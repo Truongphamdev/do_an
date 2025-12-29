@@ -14,5 +14,8 @@ class UserSerializer(serializers.ModelSerializer):
             'address',
             'role',
             'is_active',
+            'is_staff',
+            'is_superuser',
             'date_joined',
+            'last_login',
         ]

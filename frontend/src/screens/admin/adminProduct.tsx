@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, TextInput, Animated, Easing } from 'react-native'
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback } from 'react'
 // componet tái sử dụng
 import { AppStatusSwitch, AdminHeader } from '../../components'
 // navigation
@@ -25,22 +25,35 @@ const AdminProduct = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
   const [ products, setProducts ] = useState<ProductInterface[]>([]);
   const { success, error, confirm } = useNotify();
-
-  const [ search, setSearch ] = useState("");
-  const [ selectedCategory, setSelectedCategory ] = useState<number | null>(null);
   const { categories } = useCategories();
+
+  const [ searchText, setSearchText ] = useState("");
+  const [ selectedCategory, setSelectedCategory ] = useState<number | null>(null);
   const [ minPrice, setMinPrice ] = useState<string>("");
   const [ maxPrice, setMaxPrice ] = useState<string>("");
   const [ selectedPriceRange, setSelectedPriceRange ] = useState<number >(0);
+
+  const [ query, setQuery ] = useState({
+    search: "",
+    category: null as number | null,
+    minPrice: "",
+    maxPrice: "",
+  });
+  const DEFAULT_QUERY = {
+    search: "",
+    category: null as number | null,
+    minPrice: "",
+    maxPrice: "",
+  };
 
   // Hàm lấy danh sách sản phẩm
   const fetchProducts = useCallback(async () => {
     try {
       const products = await ProductApi.getList({
-        search: search.trim() || undefined,
-        category: selectedCategory ?? undefined,
-        min_price: minPrice ? Number(minPrice) : undefined,
-        max_price: maxPrice ? Number(maxPrice) : undefined,
+        search: query.search || undefined,
+        category: query.category ?? undefined,
+        min_price: query.minPrice ? Number(query.minPrice) : undefined,
+        max_price: query.maxPrice ? Number(query.maxPrice) : undefined,
       }); 
       
       const productWithImages = products.map(product => ({
@@ -58,7 +71,7 @@ const AdminProduct = () => {
     } catch (err: any) {
       error("Lấy danh sách sản phẩm thất bại!");
     }
-  }, [search, selectedCategory, minPrice, maxPrice]);
+  }, [query]);
 
   // Khi khởi động màn hình app thì gọi các hàm trong useEffect
   useFocusEffect(
@@ -66,15 +79,6 @@ const AdminProduct = () => {
       fetchProducts();
     }, [fetchProducts])
   );
-
-  // Realtime search
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      fetchProducts();
-    }, 500);
-
-    return () => clearTimeout(timeout);
-  }, [search, selectedCategory, minPrice, maxPrice, fetchProducts]);
 
   // --- REALTIME PRODUCT ---
   useWebSocket((message) => {
@@ -142,6 +146,87 @@ const AdminProduct = () => {
       )
     }
   }, 'ws://10.0.2.2:8000/ws/images/');
+
+
+  // Chức năng xóa sản phẩm
+  const handleDelete = async (id: number) => {
+    confirm({
+      title: "Thông báo",
+      message: "Bạn có chắc chắn muốn xóa sản phẩm này?",
+      onConfirm: async () => {
+        try {
+          await ProductApi.remove(id);
+          success("Xóa sản phẩm thành công!");
+        } catch (err: any) {
+          error("Xóa sản phẩm thất bại!");
+        }
+      },
+    });
+  };
+
+
+  // Chức năng cập nhật trạng thái sản phẩm
+  const handleToggleStatus = async (id: number) => {
+    try {
+      const product = products.find(prev => prev.id === id);
+      if (!product) return;
+
+      const newStatus = product.status === "available" ? "unavailable" : "available";
+
+      await ProductApi.updateStatus(id, newStatus);
+    } catch (err: any) {
+      error("Cập nhật trạng thái sản phẩm thất bại!");
+    }
+  }
+  // Mảng khoảng giá
+  const PRICE_RANGE = [
+    { id: 0, label: "Tất cả", min: null, max: null },
+    { id: 1, label: "< 100.000đ", min: 0, max: 100000 },
+    { id: 2, label: "100.000đ - 200.000đ", min: 100000, max: 200000 },
+    { id: 3, label: "200.000đ - 300.000đ", min: 200000, max: 300000 },
+    { id: 4, label: "> 300.000đ", min: 300000, max: null },
+  ];
+  // hàm chọn khoảng giá
+  const handleSelectedPriceRange = (index: number) => {
+    const range = PRICE_RANGE[index];
+    setSelectedPriceRange(index);
+
+    if (range.min === null && range.max === null) {
+      setMinPrice("");
+      setMaxPrice("");
+    } else {
+      setMinPrice(range.min !== null ? String(range.min) : "");
+      setMaxPrice(range.max !== null ? String(range.max) : "");
+    }
+  }
+  // hàm confirm search + filter
+  const applySearchFilter = () => {
+    setQuery({
+      search: searchText.trim(),
+      category: selectedCategory,
+      minPrice,
+      maxPrice,
+    });
+  };
+  // hàm reset phần filter
+  const handleResetFilter = () => {
+    setMinPrice("");
+    setMaxPrice("");
+    setSelectedCategory(null);
+    setSelectedPriceRange(0);
+    setQuery(DEFAULT_QUERY);
+    setFilterOpen(false);
+  }
+  // hàm reset search
+  const handleClearSearch = () => {
+    setSearchText("");
+    setQuery(prev => ({
+      ...prev,
+      search: "",
+    }));
+  };
+
+
 
   // --- STATE VÀ ANIMATION FAB ---
   // state dành cho menu FAB
@@ -222,71 +307,6 @@ const AdminProduct = () => {
   };
 
 
-  // Chức năng xóa sản phẩm
-  const handleDelete = async (id: number) => {
-    confirm({
-      title: "Thông báo",
-      message: "Bạn có chắc chắn muốn xóa sản phẩm này?",
-      onConfirm: async () => {
-        try {
-          await ProductApi.remove(id);
-          success("Xóa sản phẩm thành công!");
-        } catch (err: any) {
-          error("Xóa sản phẩm thất bại!");
-        }
-      },
-    });
-  };
-
-
-  // Chức năng cập nhật trạng thái sản phẩm
-  const handleToggleStatus = async (id: number) => {
-    try {
-      const product = products.find(prev => prev.id === id);
-      if (!product) return;
-
-      const newStatus = product.status === "available" ? "unavailable" : "available";
-
-      await ProductApi.updateStatus(id, newStatus);
-    } catch (err: any) {
-      error("Cập nhật trạng thái sản phẩm thất bại!");
-    }
-  }
-
-
-  // Mảng khoảng giá
-  const PRICE_RANGE = [
-    { label: "Tất cả", min: null, max: null },
-    { label: "< 100.000đ", min: 0, max: 100000 },
-    { label: "100.000đ - 200.000đ", min: 100000, max: 200000 },
-    { label: "200.000đ - 300.000đ", min: 200000, max: 300000 },
-    { label: "> 300.000đ", min: 300000, max: null },
-  ];
-  // hàm chọn khoảng giá
-  const handleSelectedPriceRange = (index: number) => {
-    const range = PRICE_RANGE[index];
-    setSelectedPriceRange(index);
-
-    if (range.min === null && range.max === null) {
-      setMinPrice("");
-      setMaxPrice("");
-    } else {
-      setMinPrice(range.min !== null ? String(range.min) : "");
-      setMaxPrice(range.max !== null ? String(range.max) : "");
-    }
-  }
-
-
-  // hàm reset phần filter
-  const handleResetFilter = () => {
-    setMinPrice("");
-    setMaxPrice("");
-    setSelectedCategory(null);
-    setSelectedPriceRange(0);
-    setFilterOpen(false);
-
-    fetchProducts();
-  }
 
 
   // hàm render item cho flatlist
@@ -324,6 +344,9 @@ const AdminProduct = () => {
     </TouchableOpacity>
   )
 
+
+
+
   return (
     <>
       <View style={styles.container}>
@@ -332,13 +355,20 @@ const AdminProduct = () => {
         />
 
         <View style={styles.boxSearch}>
-          <TextInput
-            value={search}
-            onChangeText={(text) => setSearch(text)}
-            placeholder='Tìm kiếm'
-            style={styles.searchInput}
-          />
-          <TouchableOpacity onPress={fetchProducts} style={styles.searchButton}>
+          <View style={styles.searchInputWrapper}>
+            <TextInput
+              value={searchText}
+              onChangeText={(text) => setSearchText(text)}
+              placeholder='Tìm kiếm'
+              style={styles.searchInput}
+            />
+            {searchText.length > 0 && (
+              <TouchableOpacity onPress={handleClearSearch} style={styles.clearSearchButton}>
+                <Icon name='times-circle' size={16} color="#909090" />
+              </TouchableOpacity>
+            )}
+          </View>
+          <TouchableOpacity onPress={applySearchFilter} style={styles.searchButton}>
             <Icon name='search' size={16} color="#909090"/>
           </TouchableOpacity>
           <TouchableOpacity onPress={openMenuFilter} style={styles.filterButton}>
@@ -489,6 +519,7 @@ const AdminProduct = () => {
             <View style={styles.filterPriceRange}>
                 {PRICE_RANGE.map((item, index) => (
                   <TouchableOpacity
+                    key={item.id}
                     style={[
                       styles.filterPriceRangeItem,
                       selectedPriceRange === index && styles.filterPriceRangeActive
@@ -511,7 +542,7 @@ const AdminProduct = () => {
               <TouchableOpacity style={[styles.filterActionButton, { backgroundColor: "#909090" }]} onPress={handleResetFilter}>
                 <Text style={styles.filterActionTextButton}>Huỷ</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.filterActionButton, { backgroundColor: "#FCB35E" }]} onPress={fetchProducts}>
+              <TouchableOpacity style={[styles.filterActionButton, { backgroundColor: "#FCB35E" }]} onPress={() => {applySearchFilter(); closeMenuFilter();}}>
                 <Text style={styles.filterActionTextButton}>Áp dụng</Text>
               </TouchableOpacity>
             </View>
@@ -540,14 +571,23 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 42,
   },
-  searchInput: {
+  searchInputWrapper: {
     flex: 3,
+    height: '100%',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#fff",
-    paddingHorizontal: 16,
     borderTopLeftRadius: 5,
     borderBottomLeftRadius: 5,
-    height: "100%",
     elevation: 5,
+  },
+  searchInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    height: "100%",
+  },
+  clearSearchButton: {
+    paddingHorizontal: 10,
   },
   searchButton: {
     flex: 0.5,
