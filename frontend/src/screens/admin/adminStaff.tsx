@@ -1,6 +1,10 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
+// component
 import { AdminHeader } from '../../components'
+// api
+import { UserApi } from '../../api/user.api'
+
 
 const AdminStaff = () => {
   return (
@@ -14,4 +18,6 @@ const AdminStaff = () => {
 
 export default AdminStaff
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+
+})

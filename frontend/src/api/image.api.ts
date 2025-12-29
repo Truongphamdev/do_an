@@ -6,7 +6,7 @@ export interface RNfile {
     type?: string;
 }
 
-export interface Image {
+export interface ImageInterface {
     id: number;
     image: RNfile | string;
     is_primary: boolean;
@@ -18,12 +18,12 @@ function isRNfile(image: string | RNfile): image is RNfile {
     return (image as RNfile).uri !== undefined;
 }
 
-type ImageCreate = Omit<Image, "id" | "create_at" | "image_url">;
+type ImageCreate = Omit<ImageInterface, "id" | "create_at" | "image_url">;
 type ImageUpdate = Partial<ImageCreate>;
 
 export const ImageApi = {
     getByProduct: async (productId: number) => {
-        const { data } = await api.get<Image[]>(`/products/${productId}/images`);
+        const { data } = await api.get<ImageInterface[]>(`/products/${productId}/images`);
         return data;
     },
 
@@ -37,7 +37,7 @@ export const ImageApi = {
             name: payload.image.fileName || "image.jpg",
             type: payload.image.type || "image/jpeg",
         });
-        const { data } = await api.post<Image>(
+        const { data } = await api.post<ImageInterface>(
             `/products/${productId}/images`,
             formData,
             {
@@ -61,7 +61,7 @@ export const ImageApi = {
                 name: payload.image.fileName || "image.jpg",
                 type: payload.image.type || "image/jpeg",
             });
-            const { data } = await api.put<Image>(
+            const { data } = await api.put<ImageInterface>(
                 `/products/${productId}/images/${id}`,
                 formData,
                 {
@@ -75,7 +75,7 @@ export const ImageApi = {
             // Kiểm tra để tránh undefined thuộc tính is_primary
             if (payload.is_primary !== undefined) body.is_primary = payload.is_primary;
 
-            const { data } = await api.put<Image>(`/products/${productId}/images/${id}`, body);
+            const { data } = await api.put<ImageInterface>(`/products/${productId}/images/${id}`, body);
             return data;
         }
     },

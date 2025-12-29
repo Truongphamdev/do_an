@@ -8,7 +8,7 @@ import { AdminStackParamList } from '../../navigation/adminStackNavigation'
 // icon
 import Icon from "react-native-vector-icons/FontAwesome5"
 // api
-import { CategoryApi, type CategoryInterface } from '../../api/category.api'
+import { CategoryApi, type Category } from '../../api/category.api'
 // thông báo
 import { useNotify } from '../../providers/notificationProvider'
 
@@ -19,7 +19,7 @@ const AdminCategory = () => {
     const [ showContainerInput, setShowContainerInput ] = useState(false);
     const { success, error, confirm } = useNotify();
     const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
-    const [ categories, setCategories ] = useState<CategoryInterface[]>([]);
+    const [ categories, setCategories ] = useState<Category[]>([]);
 
     // Khi khởi động màn hình app thì gọi các hàm trong useEffect
     useEffect(() => {
@@ -82,7 +82,7 @@ const AdminCategory = () => {
     }
 
     // Render item danh sách danh mục
-    const renderItem = ({ item, index }: { item: CategoryInterface, index: number }) => (
+    const renderItem = ({ item, index }: { item: Category, index: number }) => (
         <TouchableOpacity
             style={styles.itemCategory}
             onPress={() => navigation.navigate("CategoryDetail", { categoryId: item.id })}

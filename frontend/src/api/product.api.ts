@@ -1,6 +1,6 @@
 import api from "./axiosClient";
 
-export interface Product {
+export interface ProductInterface {
     id: number;
     name: string;
     description: string;
@@ -24,17 +24,17 @@ export interface ProductImage {
 }
 
 // utility types tạo kiểu con thích hợp cho create/update
-type ProductCreate = Omit<Product, "id" | "created_at" | "updated_at" | "status" > & { image?: ProductImage };
+type ProductCreate = Omit<ProductInterface, "id" | "created_at" | "updated_at" | "status" > & { image?: ProductImage };
 type ProductUpdate = Partial<ProductCreate>;
 
 export const ProductApi = {
     getAll: async () => {
-        const { data } = await api.get<Product[]>("/products/");
+        const { data } = await api.get<ProductInterface[]>("/products/");
         return data;
     },
 
     getById: async (id: number) => {
-        const { data } = await api.get<Product>(`/products/${id}`);
+        const { data } = await api.get<ProductInterface>(`/products/${id}`);
         return data;
     },
 
@@ -53,7 +53,7 @@ export const ProductApi = {
             } as any);
         }
 
-        const { data } = await api.post<Product>(
+        const { data } = await api.post<ProductInterface>(
             "/products/",
             formData,
             {
@@ -78,7 +78,7 @@ export const ProductApi = {
                 type: payload.image.type || "image/jpeg",
             } as any);
 
-            const { data } = await api.put<Product>(
+            const { data } = await api.put<ProductInterface>(
                 `/products/${productId}/`,
                 formData,
                 {
@@ -90,13 +90,13 @@ export const ProductApi = {
             return data;
         } else {
             // trường hợp không có ảnh mới
-            const { data } = await api.put<Product>(`/products/${productId}/`, payload);
+            const { data } = await api.put<ProductInterface>(`/products/${productId}/`, payload);
             return data;
         }
     },
 
     updateStatus: async (id: number, status: "available" | "unavailable") => {
-        const { data } = await api.put<Product>(`/products/${id}/status/`, { status });
+        const { data } = await api.put<ProductInterface>(`/products/${id}/status/`, { status });
         return data;
     },
 
@@ -112,7 +112,7 @@ export const ProductApi = {
         min_price?: number | string;
         max_price?: number | string;
     }) => {
-        const { data: newList } = await api.get<Product[]>("/products/", {
+        const { data: newList } = await api.get<ProductInterface[]>("/products/", {
             params,
         });
         return newList;
