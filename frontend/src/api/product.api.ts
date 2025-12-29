@@ -1,6 +1,6 @@
 import api from "./axiosClient";
 
-export interface ProductInterface {
+export interface Product {
     id: number;
     name: string;
     description: string;
@@ -24,21 +24,21 @@ export interface ProductImage {
 }
 
 // utility types tạo kiểu con thích hợp cho create/update
-type ProductCreate = Omit<ProductInterface, "id" | "created_at" | "updated_at" | "category_id" | "status" > & { image?: ProductImage };
+type ProductCreate = Omit<Product, "id" | "created_at" | "updated_at" | "status" > & { image?: ProductImage };
 type ProductUpdate = Partial<ProductCreate>;
 
 export const ProductApi = {
-    async getAll(): Promise<ProductInterface[]> {
-        const { data: products } = await api.get<ProductInterface[]>("/products/");
-        return products;
+    getAll: async () => {
+        const { data } = await api.get<Product[]>("/products/");
+        return data;
     },
 
-    async getById(id: number): Promise<ProductInterface> {
-        const { data: product } = await api.get<ProductInterface>(`/products/${id}`);
-        return product;
+    getById: async (id: number) => {
+        const { data } = await api.get<Product>(`/products/${id}`);
+        return data;
     },
 
-    async create(payload: ProductCreate): Promise<ProductInterface> {
+    create: async (payload: ProductCreate) => {
         const formData = new FormData();
         formData.append("name", payload.name);
         formData.append("description", payload.description);
@@ -53,19 +53,17 @@ export const ProductApi = {
             } as any);
         }
 
-        const { data: newProduct } = await api.post<ProductInterface>(
+        const { data } = await api.post<Product>(
             "/products/",
             formData,
             {
                 headers: { "Content-Type": "multipart/form-data" },
             }
         );
-        return newProduct;
+        return data;
     },
 
-    async update(productId: number, payload: ProductUpdate): Promise<ProductInterface> {
-        let updatedProduct: ProductInterface;
-
+    update: async (productId: number, payload: ProductUpdate) => {
         if(payload.image) {
             // trường hợp có ảnh mới
             const formData = new FormData();
@@ -80,7 +78,7 @@ export const ProductApi = {
                 type: payload.image.type || "image/jpeg",
             } as any);
 
-            const { data } = await api.put<ProductInterface>(
+            const { data } = await api.put<Product>(
                 `/products/${productId}/`,
                 formData,
                 {
@@ -89,33 +87,32 @@ export const ProductApi = {
                     },
                 }
             );
-            updatedProduct = data;
+            return data;
         } else {
             // trường hợp không có ảnh mới
-            const { data } = await api.put<ProductInterface>(`/products/${productId}/`, payload);
-            updatedProduct = data;
+            const { data } = await api.put<Product>(`/products/${productId}/`, payload);
+            return data;
         }
-        return updatedProduct;
     },
 
-    async updateStatus(id: number, status: "available" | "unavailable"): Promise<ProductInterface> {
-        const { data: updatedProduct } = await api.put<ProductInterface>(`/products/${id}/status/`, { status });
-        return updatedProduct;
+    updateStatus: async (id: number, status: "available" | "unavailable") => {
+        const { data } = await api.put<Product>(`/products/${id}/status/`, { status });
+        return data;
     },
 
-    async remove(id: number): Promise<void> {
+    remove: async (id: number) => {
         await api.delete(`/products/${id}/`);
     },
 
     // Api cho phần search, filter
-    async getList(params?: {
+    getList: async (params?: {
         search?: string;
         category?: number;
         status?: "available" | "unavailable";
         min_price?: number | string;
         max_price?: number | string;
-    }): Promise<ProductInterface[]> {
-        const { data: newList } = await api.get<ProductInterface[]>("/products/", {
+    }) => {
+        const { data: newList } = await api.get<Product[]>("/products/", {
             params,
         });
         return newList;

@@ -1,6 +1,6 @@
 import api from "./axiosClient";
 
-export interface CategoryInterface {
+export interface Category {
     id: number;
     name: string;
     description: string;
@@ -9,31 +9,31 @@ export interface CategoryInterface {
 }
 
 // utility types tạo kiểu con thích hợp cho create/update
-type CategoryCreate = Omit<CategoryInterface, "id" | "created_at" | "updated_at">;
+type CategoryCreate = Omit<Category, "id" | "created_at" | "updated_at">;
 type CategoryUpdate = Partial<CategoryCreate>;
 
 export const CategoryApi = {
-    async getAll(): Promise<CategoryInterface[]> {
-        const { data: categories } = await api.get<CategoryInterface[]>("/categories");
-        return categories;
+    getAll: async () => {
+        const { data } = await api.get<Category[]>("/categories");
+        return data;
     },
 
-    async getById(id: number): Promise<CategoryInterface> {
-        const { data: category } = await api.get<CategoryInterface>(`/categories/${id}`);
-        return category;
+    getById: async (id: number) => {
+        const { data } = await api.get<Category>(`/categories/${id}`);
+        return data;
     },
 
-    async create(payload: CategoryCreate): Promise<CategoryInterface> {
-        const { data: newCategory } = await api.post<CategoryInterface>("/categories", payload);
-        return newCategory;
+    create: async (payload: CategoryCreate) => {
+        const { data } = await api.post<Category>("/categories", payload);
+        return data;
     },
 
-    async update(id: number, payload: CategoryUpdate): Promise<CategoryInterface> {
-        const { data: updatedCategory } = await api.put<CategoryInterface>(`/categories/${id}`, payload);
-        return updatedCategory;
+    update: async (id: number, payload: CategoryUpdate) => {
+        const { data } = await api.put<Category>(`/categories/${id}`, payload);
+        return data;
     },
 
-    async remove(id: number): Promise<void> {
+    remove: async (id: number) => {
         await api.delete(`/categories/${id}`);
     },
 }

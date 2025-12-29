@@ -6,7 +6,7 @@ export interface RNfile {
     type?: string;
 }
 
-export interface ImageInterface {
+export interface Image {
     id: number;
     image: RNfile | string;
     is_primary: boolean;
@@ -18,16 +18,16 @@ function isRNfile(image: string | RNfile): image is RNfile {
     return (image as RNfile).uri !== undefined;
 }
 
-type ImageCreate = Omit<ImageInterface, "id" | "create_at" | "image_url">;
+type ImageCreate = Omit<Image, "id" | "create_at" | "image_url">;
 type ImageUpdate = Partial<ImageCreate>;
 
 export const ImageApi = {
-    async getByProduct(productId: number): Promise<ImageInterface[]> {
-        const { data: images } = await api.get<ImageInterface[]>(`/products/${productId}/images`);
-        return images;
+    getByProduct: async (productId: number) => {
+        const { data } = await api.get<Image[]>(`/products/${productId}/images`);
+        return data;
     },
 
-    async create(productId: number, payload: ImageCreate): Promise<ImageInterface> {
+    create: async (productId: number, payload: ImageCreate) => {
         if (!isRNfile(payload.image)) throw new Error("Hình ảnh phải là một đối tượng RNFile để tải lên.");
 
         const formData = new FormData();
@@ -37,19 +37,18 @@ export const ImageApi = {
             name: payload.image.fileName || "image.jpg",
             type: payload.image.type || "image/jpeg",
         });
-        const { data: image } = await api.post<ImageInterface>(
+        const { data } = await api.post<Image>(
             `/products/${productId}/images`,
             formData,
             {
                 headers: { "Content-Type": "multipart/form-data" },
                 _skipAuthRefresh: true,
-            } 
+            }
         );
-        return image;
+        return data;
     },
 
-    async update(productId: number, id: number, payload: ImageUpdate): Promise<ImageInterface> {
-        let updatedImage: ImageInterface;
+    update: async (productId: number, id: number, payload: ImageUpdate) => {
 
         if (payload.image && isRNfile(payload.image)) {
             const formData = new FormData();
@@ -62,7 +61,7 @@ export const ImageApi = {
                 name: payload.image.fileName || "image.jpg",
                 type: payload.image.type || "image/jpeg",
             });
-            const { data } = await api.put<ImageInterface>(
+            const { data } = await api.put<Image>(
                 `/products/${productId}/images/${id}`,
                 formData,
                 {
@@ -70,20 +69,18 @@ export const ImageApi = {
                     _skipAuthRefresh: true,
                 } 
             );
-            updatedImage = data;
+            return data;
         } else {
             const body: any = {};
             // Kiểm tra để tránh undefined thuộc tính is_primary
             if (payload.is_primary !== undefined) body.is_primary = payload.is_primary;
 
-            const { data } = await api.put<ImageInterface>(`/products/${productId}/images/${id}`, body);
-            updatedImage = data;
+            const { data } = await api.put<Image>(`/products/${productId}/images/${id}`, body);
+            return data;
         }
-
-        return updatedImage;
     },
 
-    async remove(productId: number, id: number): Promise<void> {
+    remove: async (productId: number, id: number) => {
         await api.delete(`/products/${productId}/images/${id}`);
     },
 }
