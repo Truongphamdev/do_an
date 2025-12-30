@@ -5,7 +5,7 @@ import { theme } from "../styles/theme"
 
 import AdminDashboard from "../screens/admin/adminDashboard"
 import AdminProduct from "../screens/admin/adminProduct"
-import AdminStaff from "../screens/admin/adminStaff"
+import AdminUser from "../screens/admin/adminUser"
 import AdminOrder from "../screens/admin/adminOrder"
 import { View } from "react-native"
 
@@ -28,7 +28,7 @@ export const AdminTabBottom = () => {
                     let iconName: string = "";
                     if (route.name === "AdminDashboard") iconName ="home";
                     else if (route.name === "AdminProduct") iconName = "utensils";
-                    else if (route.name === "AdminStaff") iconName = "users";
+                    else if (route.name === "AdminUser") iconName = "users";
                     else if (route.name === "AdminOrder") iconName = "receipt";
 
                     return (
@@ -51,7 +51,7 @@ export const AdminTabBottom = () => {
         >   
             <Tab.Screen name="AdminDashboard" component={AdminDashboard} />
             <Tab.Screen name="AdminProduct" component={AdminProduct} />
-            <Tab.Screen name="AdminStaff" component={AdminStaff} />
+            <Tab.Screen name="AdminUser" component={AdminUser} />
             <Tab.Screen name="AdminOrder" component={AdminOrder} />
         </Tab.Navigator>
     )

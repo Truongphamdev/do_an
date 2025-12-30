@@ -20,7 +20,6 @@ import { useWebSocket } from '../../hooks/useWebsocket'
 // ảnh mặc định khi ko lấy được dữ liệu ảnh
 const placeholderImageProduct = require("../../assets/images/placeholderProduct.png");
 
-
 const AdminProduct = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
   const [ products, setProducts ] = useState<ProductInterface[]>([]);
@@ -61,11 +60,10 @@ const AdminProduct = () => {
         image: product.image_url ?? "https://via.placeholder.com/40x30"
       }));
 
-      const sorted = [...productWithImages].sort((a, b) => {
-        const ta = Date.parse(a.created_at ?? "") || 0;
-        const tb = Date.parse(b.created_at ?? "") || 0;
-        return tb - ta;
-      });
+      const sorted = [...productWithImages].sort(
+        (a, b) => 
+          new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
+      );
 
       setProducts(sorted);
     } catch (err: any) {
@@ -312,34 +310,49 @@ const AdminProduct = () => {
   // hàm render item cho flatlist
   const renderItem = ({ item, index}: { item: ProductInterface, index: number}) => (
     <TouchableOpacity
-      style={styles.itemProduct}
+      style={styles.card}
       onPress={() => navigation.navigate("ProductDetail", { productId: item.id })}
       activeOpacity={0.7}
     >
       <Text style={styles.serialNumber}>{index + 1}</Text>
-      <View style={styles.imageProductWrapper}>
+      {/* image */}
+      <View style={styles.imageWrapper}>
         <Image source={ item.image ? { uri: item.image } : placeholderImageProduct} style={styles.image}/>
       </View>
-      <View style={styles.informationProduct}>
-        <Text style={styles.itemInformationProduct}>{item.name}</Text>
-        <Text style={styles.itemInformationProduct}>{item.category_name}</Text>
-        <Text style={styles.itemInformationProduct}>{Number(item.price).toLocaleString("vi-VN")} VNĐ</Text>
-      </View>
-      <View style={styles.actionProductButtons}>
-        <View style={styles.addAndEditButton}>
-          <TouchableOpacity style={[styles.actionProductButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddProduct", { productId: item.id })}>
-            <Text style={styles.actionProductTextButton}>Sửa</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionProductButton, { backgroundColor: "#ff3737" }]} onPress={() => handleDelete(item.id)}>
-            <Text style={styles.actionProductTextButton}>Xóa</Text>
-          </TouchableOpacity>
+      {/* Thông tin */}
+      <View style={styles.content}>
+        {/* name + status */}
+        <View style={styles.nameProductWrapper}>
+          <Text style={styles.nameProduct}>
+            {item.name}
+          </Text>
+
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: item.status === "available" ? "#34d418" : "#FCB35E" }
+            ]}
+          >
+            <Text style={styles.statusText}>{item.status === "available" ? "Hiển thị" : "Đã ẩn"}</Text>
+          </View>
         </View>
-        <AppStatusSwitch
-          onToggle={() => handleToggleStatus(item.id)}
-          value={item.status === "available"}
-          style={styles.swithButton}
-          textStyle={{ color: item.status === "available" ? "#1ABDBE" : "#6d6d6d" }}
-        />
+        {/* category */}
+        <Text style={styles.subText}>
+          {item.category_name}
+        </Text>
+        {/* price */}
+        <Text style={styles.metaText}>
+          {Number(item.price).toLocaleString("vi-VN")} VNĐ
+        </Text>
+      </View>
+      {/* action button */}
+      <View style={styles.actionButtons}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddProduct", { productId: item.id })}>
+          <Text style={styles.actionTextButton}>Sửa</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#ff3737" }]} onPress={() => handleDelete(item.id)}>
+          <Text style={styles.actionTextButton}>Xóa</Text>
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   )
@@ -384,9 +397,9 @@ const AdminProduct = () => {
             style={{ padding: 5, marginTop: 5, }}
           />
         ) : (
-          <View style={styles.listNoProduct}>
+          <View style={styles.noProduct}>
             <Icon name='utensils' size={80} color="#1ABDBE"/>
-            <Text style={styles.textListNoProduct}>Hiện tại chưa có sản phẩm. Vui lòng thêm sản phẩm!</Text>
+            <Text style={styles.textNoProduct}>Hiện tại chưa có sản phẩm. Vui lòng thêm sản phẩm!</Text>
           </View>
         )}
 
@@ -557,7 +570,7 @@ export default AdminProduct
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingVertical: 10,
     flexGrow: 1,
     backgroundColor: "#e1f3f8",
@@ -570,6 +583,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "100%",
     height: 42,
+    paddingHorizontal: 5,
   },
   searchInputWrapper: {
     flex: 3,
@@ -777,14 +791,14 @@ const styles = StyleSheet.create({
   },
 
   // style list product
-  listNoProduct: {
+  noProduct: {
     flex: 1,
     width: "100%",
     marginTop: 10,
     alignItems: "center",
     justifyContent: "center",
   },
-  textListNoProduct: {
+  textNoProduct: {
     marginTop: 10,
     fontSize: 16,
     textAlign: "center",
@@ -792,21 +806,22 @@ const styles = StyleSheet.create({
   },
 
   // style cho từng item product
-  itemProduct:{
+  card:{
     marginTop: 10,
     flexDirection: "row",
     alignItems: "center",
-    padding: 10,
+    paddingVertical: 15,
+    paddingHorizontal: 10,
     backgroundColor: "#fff",
     borderRadius: 5,
     elevation: 5,
   },
   serialNumber: {
-    flex: 0.7,
+    width: 28,
     paddingVertical: 5,
     fontSize: 16,
   },
-  imageProductWrapper: {
+  imageWrapper: {
     flex: 1,
     justifyContent: "center",
   },
@@ -814,31 +829,58 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
   },
-  informationProduct: {
+  content: {
     flex: 3,
     paddingLeft: 10,
     justifyContent: "center",
   },
-  itemInformationProduct: {
-    fontSize: 16,
+  nameProductWrapper: {
+    position: "relative",
+    backgroundColor: "#eef7ff",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
   },
-  actionProductButtons: {
+  nameProduct: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  statusBadge: {
+    position: "absolute",
+    top: -8,
+    right: -30,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    elevation: 3,
+  },
+  statusText: {
+    fontSize: 12,
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  subText: {
+    fontSize: 14,
+    color: "#707070",
+  },
+  metaText: {
+    fontSize: 16,
+    color: "#ff5500",
+    fontWeight: "bold",
+  },
+  actionButtons: {
     flex: 1.6,
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
     gap: 6,
   },
-  addAndEditButton: {
-    flexDirection: "row",
-    gap: 6,
-  },
-  actionProductButton: {
-    width: '45%',
+  actionButton: {
     padding: 5,
     borderRadius: 3,
   },
-  actionProductTextButton: {
+  actionTextButton: {
     fontSize: 14,
     fontWeight: "bold",
     color: "#fff",

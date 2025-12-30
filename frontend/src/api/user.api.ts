@@ -1,6 +1,6 @@
 import api from "./axiosClient";
 
-interface User {
+export interface UserInterface {
     id: number;
     username: string;
     email: string;
@@ -20,17 +20,17 @@ type staffRole = "waiter" | "chef" | "cashier";
 
 export const UserApi = {
     getAll: async () => {
-        const {data} = await api.get<User[]>("admin/users");
+        const {data} = await api.get<UserInterface[]>("admin/users");
         return data;
     },
 
     getById: async (id: number) => {
-        const { data } = await api.get<User>(`admin/users/${id}`);
+        const { data } = await api.get<UserInterface>(`admin/users/${id}`);
         return data;
     },
 
     getMe: async () => {
-        const { data } = await api.get<User>("admin/users/me/");
+        const { data } = await api.get<UserInterface>("admin/users/me/");
         return data;
     },
 

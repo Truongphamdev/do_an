@@ -18,6 +18,13 @@ class UserViewSet(ReadOnlyModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.action == 'list':
+            return queryset.exclude(role='admin')
+        return queryset
+        
     def get_permissions(self):
         if self.action == 'me':
             return [IsAuthenticated()]
