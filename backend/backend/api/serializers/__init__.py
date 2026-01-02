@@ -6,3 +6,4 @@ from api.serializers.reservation.reservation_serializer import ReservationSerial
 from api.serializers.cartitem.cartitem_serializer import CartItemSerializer
 from api.serializers.order.order_serializer import CreateOrderSerializer,OrderSerializer
 from api.serializers.invoice import invoice_serializer
+from api.serializers.user.user_serializer import UserSerializer

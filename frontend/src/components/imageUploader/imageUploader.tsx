@@ -1,18 +1,24 @@
-import { StyleSheet, View, Image, Alert, TouchableOpacity } from 'react-native';
-import React, { useState } from 'react';
-import { launchImageLibrary, launchCamera, Asset} from "react-native-image-picker";
+import { StyleSheet, View, Image, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { launchImageLibrary } from "react-native-image-picker";
 import { RNfile } from '../../api/image.api';
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 interface ImageProps {
     name: string;
-    value: RNfile | null;
+    value: RNfile | null; // ảnh user chọn
+    imageUrl?: string | null; // ảnh cũ từ server
     onChange: (file: RNfile | null) => void;
     style?: any;
 }
 
-export const ImageUploader: React.FC<ImageProps> = ({ name, value, onChange, style }) => {
-    const selectedImage = value;
+export const ImageUploader: React.FC<ImageProps> = ({ name, value, imageUrl, onChange, style }) => {
+    /**
+     * Ưu tiên hiển thị:
+     * 1. Ảnh user vừa chọn (RNfile)
+     * 2. Ảnh server (URL)
+     */
+    const disPlayUri = value?.uri ?? imageUrl ?? null;
 
     // Hàm chọn ảnh từ thư viên
     const PickImage = async () => {
@@ -40,9 +46,9 @@ export const ImageUploader: React.FC<ImageProps> = ({ name, value, onChange, sty
             onPress={PickImage}
             activeOpacity={0.8}
         >
-            {selectedImage ? (
+            {disPlayUri ? (
                 <View style={styles.image}>
-                    <Image source={{ uri: selectedImage.uri }} style={styles.preview} resizeMode='contain'/>
+                    <Image source={{ uri: disPlayUri }} style={styles.preview} resizeMode='contain'/>
                     <TouchableOpacity onPress={RemoveImage} style={styles.removeButton}>
                         <Icon name='times' size={24} color="#a5a5a5" />
                     </TouchableOpacity>

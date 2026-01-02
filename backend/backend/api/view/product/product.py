@@ -8,6 +8,9 @@ from api.serializers import ProductSerializer,ImageSerializer
 from rest_framework.decorators import action,permission_classes
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.authentication import JWTAuthentication
+
+from django.db.models import Q
+
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
@@ -27,6 +30,53 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    # (thêm)
+    def list(self, request, *args, **kwargs):
+        queryset = Product.objects.all()
+        
+        #search
+        search = request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) |
+                Q(description__icontains=search)
+            )
+            
+        # filter category
+        category_id = request.query_params.get('category')
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+            
+        # filter status
+        status_value = request.query_params.get('status')
+        if status_value:
+            queryset = queryset.filter(status=status_value)
+            
+        # filter price range
+        min_price = request.query_params.get('min_price')
+        max_price = request.query_params.get('max_price')
+        
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+            
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+            
+        # sort
+        sort = request.query_params.get('sort')
+        if sort == 'newest':
+            queryset = queryset.order_by('-created_at')
+            
+        if sort == 'price_asc':
+            queryset = queryset.order_by('price')
+            
+        if sort == 'price_desc':
+            queryset = queryset.order_by('-price')
+            
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
     # --- Custom Action ---
     @action(detail=True, methods=['put'], url_path='status')
     def update_status(self, request, pk=None):

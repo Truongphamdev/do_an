@@ -1,80 +1,68 @@
-import { ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
+import { FlatList } from 'react-native-gesture-handler'
+// navigation
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { AdminStackParamList } from '../../navigation/adminStackNavigation'
+// icon
 import Icon from "react-native-vector-icons/FontAwesome5"
+// api
+import { CategoryApi, type Category } from '../../api/category.api'
+// thông báo
 import { useNotify } from '../../providers/notificationProvider'
-import { categorySchema, type categoryForm } from '../../validation/categoryValidation'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import { CategoryApi, type CategoryInterface } from '../../api/category.api'
-import { AppInput } from '../../components'
-import { FlatList } from 'react-native-gesture-handler'
+
+// WebSocket
+import { useWebSocket } from '../../hooks/useWebsocket'
 
 const AdminCategory = () => {
-    const { control, handleSubmit, formState: { errors }, setValue, reset } = useForm<categoryForm>({
-        resolver: zodResolver(categorySchema),
-        defaultValues: {
-            name: "",
-            description: "",
-        },
-    });
-
     const [ showContainerInput, setShowContainerInput ] = useState(false);
     const { success, error, confirm } = useNotify();
     const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
-    const [ categories, setCategories ] = useState<CategoryInterface[]>([]);
-    const [ editingCategory, setEditingCategory] = useState<CategoryInterface | null>(null);
+    const [ categories, setCategories ] = useState<Category[]>([]);
 
     // Khi khởi động màn hình app thì gọi các hàm trong useEffect
     useEffect(() => {
         fetchCategories();
     }, []);
+
+    // WebSocket
+    useWebSocket((message) => {
+        console.log("📌 Realtime message:", message);
+
+        switch(message.type) {
+            case "CATEGORY_CREATED":
+                setCategories(prev => [message.category, ...prev]);
+                break;
+            
+            case "CATEGORY_UPDATED":
+                setCategories(prev => prev.map(item => item.id === message.category.id ? message.category : item));
+                break;
+
+            case "CATEGORY_DELETED":
+                setCategories(prev => prev.filter(item => item.id !== message.id));
+                break;
+
+            default:
+                console.log("❓ Unknown realtime type", message.type);
+        }
+    }, "ws://10.0.2.2:8000/ws/categories/");
     
     // Hàm chức năng lấy danh sách danh mục
     const fetchCategories = async () => {
         try {
             const categories = await CategoryApi.getAll();
-            setCategories(categories);
+
+            const sorted = [...categories].sort((a, b) => {
+                const ta = Date.parse(a.created_at ?? "") || 0;
+                const tb = Date.parse(b.created_at ?? "") || 0;
+                return tb - ta;
+            });
+
+            setCategories(sorted);
         } catch (err) {
             error("Lấy danh sách danh mục thất bại");
         }
-    }
-
-    // Hàm chức năng thêm/sửa danh mục
-    const onSubmit = async (data: categoryForm) => {
-        if (editingCategory?.id !== undefined) {
-            // Sửa
-            try {
-                const updatedCategory = await CategoryApi.update(editingCategory.id, data);
-                setCategories(prev => prev.map(category => category.id === updatedCategory.id ? updatedCategory : category));
-                success("Cập nhật danh mục thành công!");
-            } catch (err) {
-                error("Cập nhật danh mục thất bại!");
-            }
-        } else {
-            // Thêm
-            try {
-                const newCategory = await CategoryApi.create(data);
-                setCategories(prev => [newCategory, ...prev]);
-                success("Thêm danh mục thành công!");
-            } catch (err) {
-                error("Thêm danh mục thất bại!");
-            }
-        }
-        reset({ name: '', description: '' });
-        setShowContainerInput(false);
-        setEditingCategory(null);
-    }
-
-    // Hàm bổ sung chức năng sửa
-    const handleEdit = (category: CategoryInterface) => {
-        setEditingCategory(category);
-        setShowContainerInput(true);
-
-        setValue('name', category.name);
-        setValue('description', category.description);
     }
 
     // Hàm chức năng xóa danh mục
@@ -85,8 +73,6 @@ const AdminCategory = () => {
             onConfirm: async () => {
                 try {
                     await CategoryApi.remove(id);
-
-                    setCategories(prev => prev.filter(category => category.id !== id));
                     success("Xóa danh mục thành công!");
                 } catch (err) {
                     error("Xóa danh mục thất bại!");
@@ -96,19 +82,23 @@ const AdminCategory = () => {
     }
 
     // Render item danh sách danh mục
-    const renderItem = ({ item, index }: { item: CategoryInterface, index: number }) => (
-        <View style={styles.itemCategory}>
+    const renderItem = ({ item, index }: { item: Category, index: number }) => (
+        <TouchableOpacity
+            style={styles.itemCategory}
+            onPress={() => navigation.navigate("CategoryDetail", { categoryId: item.id })}
+            activeOpacity={0.7}
+        >
             <Text style={styles.serialNumber}>{index + 1}</Text>
             <Text style={styles.nameCategory}>{item.name}</Text>
             <View style={styles.actionCategoryButtons}>
-                <TouchableOpacity onPress={() => {handleEdit(item)}} style={[styles.actionCategoryButton, { backgroundColor: "#3a9bfbff"}]}>
+                <TouchableOpacity onPress={() => navigation.navigate("AdminAddCategory", { categoryId: item.id })} style={[styles.actionCategoryButton, { backgroundColor: "#3a9bfb"}]}>
                     <Text style={styles.actionCategoryTextButton}>Sửa</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handelDelete(item.id)} style={[styles.actionCategoryButton, { backgroundColor: "#ff3737ff"}]}>
+                <TouchableOpacity onPress={() => handelDelete(item.id)} style={[styles.actionCategoryButton, { backgroundColor: "#ff3737"}]}>
                     <Text style={styles.actionCategoryTextButton}>Xóa</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </TouchableOpacity>
     )
 
     return (
@@ -120,61 +110,18 @@ const AdminCategory = () => {
             <View style={styles.container}>
                 <Text style={styles.titleHeader}>Quản lý danh mục</Text>
 
-                {!showContainerInput && (
-                    <View style={styles.containerAddCategoryButton}>
-                        <TouchableOpacity onPress={() => setShowContainerInput(true)} style={styles.addCategoryButton}>
-                            <Text style={styles.addCategoryTextButton}>Thêm danh mục</Text>
-                            {/* <Icon name='plus' size={16} color="#1ABDBE"/> */}
-                        </TouchableOpacity>
-                    </View>
-                )}
+                <View style={{ padding: 5 }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('AdminAddCategory', {})} style={styles.addCategoryButton}>
+                        <Icon name='plus' size={16} color="#1ABDBE"/>
+                    </TouchableOpacity>
+                </View>
 
-                {showContainerInput && (
-                    <View style={styles.boxInput}>
-                        <Text style={styles.boxInputTitle}>{editingCategory ? 'Cập nhật thông tin danh mục' : 'Nhập thông tin danh mục'}</Text>
-                        <AppInput
-                            name='name'
-                            control={control}
-                            placeholder='Tên danh mục'
-                            error={errors.name?.message}
-                            style={styles.appInput}
-                        />
-                        <AppInput
-                            name='description'
-                            control={control}
-                            placeholder='Mô tả danh mục'
-                            error={errors.description?.message}
-                            style={[styles.appInput, { height: 120 }]}
-                            multiline={true}
-                            numberOfLines={4}
-                        />
-                        <View style={styles.boxInputButtons}>
-                            <TouchableOpacity 
-                                onPress={() => {
-                                    setShowContainerInput(false);
-                                    setEditingCategory(null);
-                                    reset({ name: "", description: "" })
-                                }}
-                                style={[styles.boxInputButton, { backgroundColor: "#d9eef4ff"}]}>
-                                <Text style={[styles.boxInputTextButton, { color: "#1ABDBE" }]}>Hủy</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleSubmit(onSubmit)} style={[styles.boxInputButton, { backgroundColor: "#FCB35E"}]}>
-                                <Text style={[styles.boxInputTextButton, { color: "#fff" }]}>{editingCategory ? 'Cập nhật' : 'Thêm'}</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                )}
-
-                {categories && (
-                    <View style={styles.listCategory}>
-                        <Text style={styles.titleListCategory}>Danh sách danh mục</Text>
-                        <FlatList
-                            data={categories}
-                            renderItem={renderItem}
-                            keyExtractor={(item) => item.id.toString()}
-                        />
-                    </View>
-                )}
+                <FlatList
+                    data={categories}
+                    renderItem={renderItem}
+                    keyExtractor={(item) => item.id.toString()}
+                    style={{ padding: 5 }}
+                />
             </View>
         </>
     )
@@ -186,7 +133,7 @@ const styles = StyleSheet.create({
     container: {
         padding: 16,
         flexGrow: 1,
-        backgroundColor: "#CEE1E6",
+        backgroundColor: "#e1f3f8",
     },
     titleHeader: {
         fontSize: 28,
@@ -204,92 +151,33 @@ const styles = StyleSheet.create({
     },
     iconGoBack: {
         fontSize: 20,
-        color: "#fff",
+        color: "#545454",
     },
 
     // Nút thêm danh mục
-    containerAddCategoryButton: {
-        display: 'flex',
-        alignItems: "center",
-        marginTop: 20,
-    },
     addCategoryButton: {
         backgroundColor: "#fff",
         flexDirection: "column",
         alignItems: "center",
+        justifyContent: "center",
         width: "100%",
-        padding: 10,
+        height: 48,
         borderRadius: 5,
-        gap: 5,
-        elevation: 5,
-    },
-    addCategoryTextButton: {
-        color: "#1ABDBE",
-        fontSize: 20,
-        fontWeight: "900",
-    },
-
-    // Khung nhập liệu
-    boxInput: {
-        flexDirection: "column",
-        alignItems: "center",
+        elevation: 3,
         marginTop: 20,
-        borderRadius: 5,
-        padding: 15,
-        elevation: 5,
-        backgroundColor: "#fff",
     },
-    boxInputTitle: {
-        fontSize: 20,
-        fontWeight: "bold",
-        marginBottom: 16,
-        color: "#1ABDBE",
-    },
-    appInput: {
-        borderColor: "#1ABDBE",
-    },
-    boxInputButtons: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 100,
-        marginTop: 10,
-    },
-    boxInputButton: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 5,
-        elevation: 5,
-    },
-    boxInputTextButton: {
-        fontSize: 16,
-        fontWeight: "900",
-    },
+    
 
     // Danh sách danh mục
-    listCategory: {
-        flexDirection: "column",
-        width: "100%",
-        marginTop: 16,
-        backgroundColor: "#fff",
-        padding: 16,
-        borderRadius: 5,
-        elevation: 5,
-    },
-    titleListCategory: {
-        fontSize: 20,
-        fontWeight: "bold",
-        color: "#1ABDBE",
-        textAlign: "center",
-        marginBottom: 10,
-    },
     itemCategory: {
         flexDirection: "row",
         alignItems: "center",
         width: "100%",
-        marginTop: 5,
-        backgroundColor: "#eeeeeeff",
+        marginTop: 10,
+        backgroundColor: "#fff",
         borderRadius: 5,
         padding: 5,
+        elevation: 3,
     },
     serialNumber: {
         flex: 0.5,
@@ -297,7 +185,7 @@ const styles = StyleSheet.create({
         padding: 5,
     },
     nameCategory: {
-        flex: 2,
+        flex: 3,
         fontSize: 16,
         padding: 5,
     },

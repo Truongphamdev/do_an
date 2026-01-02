@@ -1,6 +1,12 @@
+import uuid
 from django.db import models
+from django.utils import timezone
+from datetime import timedelta
+from django.conf import settings
+
 from django.contrib.auth.models import AbstractUser
 from cloudinary.models import CloudinaryField
+
 class User(AbstractUser):
     phone = models.CharField(max_length=15, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
@@ -120,6 +126,16 @@ class Image(models.Model):
     is_primary = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # thuộc tính đẻ tránh chọn ảnh trùng (thêm)
+    image_hash = models.CharField(max_length=64, null=True, blank=True)
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['product', 'image_hash'],
+                name='unique_image_per_product'
+            )
+        ]
     
     objects = models.Manager()
     def __str__(self):
@@ -168,3 +184,30 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment for Order {self.order.id}"
+    
+# PASSWORD RESET
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='password_reset_tokens'
+    )
+    token = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    @staticmethod
+    def generate_token(user, minutes=15):
+        return PasswordResetToken.objects.create(
+            user=user,
+            token=uuid.uuid4().hex,
+            expires_at=timezone.now() + timedelta(minutes=minutes)
+        )
+        
+    def is_valid(self):
+        return not self.is_used and self.expires_at > timezone.now()
+    
+    def __str__(self):
+        return f"PasswordResetToken({self.user})"
+    

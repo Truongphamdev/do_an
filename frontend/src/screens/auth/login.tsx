@@ -1,14 +1,19 @@
 import { Text, View, StyleSheet } from 'react-native'
 import React, { useState} from 'react'
-import { theme } from '../../styles/theme'
-import { AppButton, AppInput, AppTextLink } from '../../components'
+// component
+import { AppButton, AppInput, AppTextLink, AppLoadingOverlay } from '../../components'
+// navigation
 import { AuthNav } from '../../navigation/authNavigation'
 import { useNavigation } from '@react-navigation/native'
+// validate
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema, type LoginForm } from '../../validation/authValidation'
+// thông báo
 import { useNotify } from '../../providers/notificationProvider'
+// api
 import { authApi } from '../../api/auth.api'
+// auth
 import { useAuth } from '../../providers/authProvider'
 
 const Login = () => {
@@ -57,29 +62,40 @@ const Login = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.loginBox}>
+      <View style={styles.boxInput}>
         <Text style={styles.title}>Đăng nhập</Text>
-        <AppInput
-          name='email'
-          control={control}
-          placeholder='Email'
-          keyboardType="email-address"
-          autoCapitalize="none"
-          error={errors.email?.message}
-        />
-        <AppInput
-          name='password'
-          control={control}
-          placeholder='Mật khẩu'
-          secureTextEntry={true}
-          error={errors.password?.message}
-        />
-        <AppButton title={loading ? "Đang đăng nhập" : "Đăng nhập"} onPress={handleSubmit(handleLogin)} style={styles.loginButton}/>
+        <View style={styles.item}>
+          <Text style={styles.label}>Email</Text>
+          <AppInput
+            name='email'
+            control={control}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            error={errors.email?.message}
+          />
+        </View>
+        <View style={styles.item}>
+          <Text style={styles.label}>Mật khẩu</Text>
+          <AppInput
+            name='password'
+            control={control}
+            secureTextEntry={true}
+            error={errors.password?.message}
+          />
+        </View>
+      </View>
+      <View style={styles.boxButton}>
         <View style={styles.question}>
           <Text>Bạn chưa có tài khoản?</Text>
           <AppTextLink title="Đăng ký" onPress={() => navigation.navigate('Register')} />
         </View>
+        <AppButton title={loading ? "Đang đăng nhập" : "Đăng nhập"} onPress={handleSubmit(handleLogin)} style={styles.loginButton}/>
       </View>
+
+      <AppLoadingOverlay
+        visible={loading}
+        title='Đang đăng nhập...'
+      />
     </View>
   )
 }
@@ -89,20 +105,15 @@ export default Login
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#CEE1E6',
+    backgroundColor: "#fff",
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     padding: 20,
   },
-  loginBox: {
+  boxInput: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: "#fff",
-    width: "100%",
-    padding: 20,
-    borderRadius: 10,
-    elevation: 5,
+    width: '100%',
   },
   title: {
       marginBottom: 16,
@@ -110,8 +121,24 @@ const styles = StyleSheet.create({
       fontWeight: "900",
       color: "#1ABDBE",
   },
+  item: {
+    width: '100%',
+    gap: 5,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  boxButton: {
+    width: '80%',
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 30,
+  },
   loginButton: {
     backgroundColor: "#1ABDBE",
+    width: '100%',
+    alignItems: "center",
   },
   question: {
       flexDirection: 'row',

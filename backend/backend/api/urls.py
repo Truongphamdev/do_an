@@ -16,7 +16,8 @@ from .view import (
     CreateQRView,
     sepay_webhook,
     CheckPaymentStatusView,
-    InvoiceViewSet
+    InvoiceViewSet,
+    UserViewSet
 )
 from .view.product.product import ProductViewSet
 from rest_framework.routers import DefaultRouter
@@ -29,6 +30,9 @@ router.register(r'admin/reservations', ReservationAdminViewSet, basename='admin-
 router.register(r'products', ProductViewSet, basename='product')
 # url table/
 router.register(r'tables',TableViewSet,basename='table')
+# mới
+# url user/
+router.register(r'admin/users', UserViewSet, basename='admin-users')
 
 urlpatterns = [
     # Auth
@@ -43,7 +47,7 @@ urlpatterns = [
     path('cashier/seperateorder/',OrderCashierViewSet.as_view({'put':'separate_table'}),name='separate-order'),
     # Categories (dùng ViewSet)
     path('categories', CreateCategoryViewSet.as_view({'get': 'list', 'post': 'create'}), name='category-list'),
-    path('categories/<int:pk>', CreateCategoryViewSet.as_view({'put': 'update', 'delete': 'destroy'}), name='category-detail'),
+    path('categories/<int:pk>', CreateCategoryViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='category-detail'),
     # reservations (dùng ViewSet)
     path('reservations',ReservationViewSet.as_view({'get':'list','post':'create'}),name='reservation-list'),
     path('reservations/<int:pk>',ReservationViewSet.as_view({'get':'retrieve','put':'update','delete':'destroy'}),name='reservation-detail'),

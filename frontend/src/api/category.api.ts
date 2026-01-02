@@ -13,22 +13,27 @@ type CategoryCreate = Omit<CategoryInterface, "id" | "created_at" | "updated_at"
 type CategoryUpdate = Partial<CategoryCreate>;
 
 export const CategoryApi = {
-    async getAll(): Promise<CategoryInterface[]> {
-        const { data: categories } = await api.get<CategoryInterface[]>("/categories");
-        return categories;
+    getAll: async () => {
+        const { data } = await api.get<CategoryInterface[]>("/categories");
+        return data;
     },
 
-    async create(payload: CategoryCreate): Promise<CategoryInterface> {
-        const { data: newCategory } = await api.post<CategoryInterface>("/categories", payload);
-        return newCategory;
+    getById: async (id: number) => {
+        const { data } = await api.get<CategoryInterface>(`/categories/${id}`);
+        return data;
     },
 
-    async update(id: number, payload: CategoryUpdate): Promise<CategoryInterface> {
-        const { data: updatedCategory } = await api.put<CategoryInterface>(`/categories/${id}`, payload);
-        return updatedCategory;
+    create: async (payload: CategoryCreate) => {
+        const { data } = await api.post<CategoryInterface>("/categories", payload);
+        return data;
     },
 
-    async remove(id: number): Promise<void> {
+    update: async (id: number, payload: CategoryUpdate) => {
+        const { data } = await api.put<CategoryInterface>(`/categories/${id}`, payload);
+        return data;
+    },
+
+    remove: async (id: number) => {
         await api.delete(`/categories/${id}`);
     },
 }

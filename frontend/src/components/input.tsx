@@ -11,9 +11,13 @@ interface Props extends TextInputProps {
     control: Control<any>;
     error?: string;
     secureTextEntry?: boolean;
+
+    // tuỳ chỉnh size input theo text
+    autoHeight?: boolean;
+    onContentSizeChange?: (event: any) => void;
 }
 
-export const AppInput = ({ style, containerStyle, name, control, error, secureTextEntry = false, ...props}: Props) => {
+export const AppInput = ({ style, containerStyle, name, control, error, secureTextEntry = false, autoHeight = false, onContentSizeChange, ...props}: Props) => {
     const [ isPasswordVisible, setIsPasswordVisible ] = useState(false);
 
     return(
@@ -29,11 +33,20 @@ export const AppInput = ({ style, containerStyle, name, control, error, secureTe
                     <View>
                         <TextInput
                             {...props}
+                            // tuỳ chỉnh size input theo text
+                            multiline={props.multiline}
+                            onContentSizeChange={autoHeight ? onContentSizeChange : undefined}
+
                             value={value}
                             onChangeText={onChange}
                             onBlur={onBlur}
                             secureTextEntry={secureTextEntry && !isPasswordVisible}
-                            style={[styles.input, style, secureTextEntry && { paddingRight: 40 }]}
+                            style={[
+                                styles.input,
+                                style,
+                                autoHeight && { height: undefined },
+                                secureTextEntry && { paddingRight: 40 }
+                            ]}
                         />
 
                         {/* icon ẩn/hiện mật khẩu */}

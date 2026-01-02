@@ -7,10 +7,10 @@ export interface ProductInterface {
     price: number;
     category: number;
     category_name?: string;
+    status: "available" | "unavailable",
     created_at?: string;
     updated_at?: string;
 
-    // cấu hình khi dữ liệu được trả về
     // image dùng cho chức năng upload
     image?: string;
     // image_url dùng cho hiển thị
@@ -24,28 +24,21 @@ export interface ProductImage {
 }
 
 // utility types tạo kiểu con thích hợp cho create/update
-type ProductCreate = Omit<ProductInterface, "id" | "created_at" | "updated_at" | "category_id" > & { image?: ProductImage };
+type ProductCreate = Omit<ProductInterface, "id" | "created_at" | "updated_at" | "status" > & { image?: ProductImage };
 type ProductUpdate = Partial<ProductCreate>;
 
 export const ProductApi = {
-    async getAll(): Promise<ProductInterface[]> {
-        const { data: products } = await api.get<ProductInterface[]>("/products/");
-        return products;
+    getAll: async () => {
+        const { data } = await api.get<ProductInterface[]>("/products/");
+        return data;
     },
 
-    async getById(id: number): Promise<ProductInterface> {
-        const { data: product } = await api.get<ProductInterface>(`/products/${id}`);
-        return product;
+    getById: async (id: number) => {
+        const { data } = await api.get<ProductInterface>(`/products/${id}`);
+        return data;
     },
 
-    async getByCategory(category_id: number): Promise<ProductInterface[]> {
-        const { data: productsByCategory } = await api.get<ProductInterface[]>("/products/product_filter", {
-            params: { category_id }
-        });
-        return productsByCategory;
-    },
-
-    async create(payload: ProductCreate): Promise<ProductInterface> {
+    create: async (payload: ProductCreate) => {
         const formData = new FormData();
         formData.append("name", payload.name);
         formData.append("description", payload.description);
@@ -60,13 +53,17 @@ export const ProductApi = {
             } as any);
         }
 
-        const { data: newProduct } = await api.post<ProductInterface>("/products/", formData, { headers: { "Content-Type": "multipart/form-data" } });
-        return newProduct;
+        const { data } = await api.post<ProductInterface>(
+            "/products/",
+            formData,
+            {
+                headers: { "Content-Type": "multipart/form-data" },
+            }
+        );
+        return data;
     },
 
-    async update(productId: number, payload: ProductUpdate): Promise<ProductInterface> {
-        let updatedProduct: ProductInterface;
-
+    update: async (productId: number, payload: ProductUpdate) => {
         if(payload.image) {
             // trường hợp có ảnh mới
             const formData = new FormData();
@@ -81,17 +78,43 @@ export const ProductApi = {
                 type: payload.image.type || "image/jpeg",
             } as any);
 
-            const { data } = await api.put<ProductInterface>(`/products/${productId}/`, formData);
-            updatedProduct = data;
+            const { data } = await api.put<ProductInterface>(
+                `/products/${productId}/`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+            return data;
         } else {
             // trường hợp không có ảnh mới
             const { data } = await api.put<ProductInterface>(`/products/${productId}/`, payload);
-            updatedProduct = data;
+            return data;
         }
-        return updatedProduct;
     },
 
-    async remove(id: number): Promise<void> {
+    updateStatus: async (id: number, status: "available" | "unavailable") => {
+        const { data } = await api.put<ProductInterface>(`/products/${id}/status/`, { status });
+        return data;
+    },
+
+    remove: async (id: number) => {
         await api.delete(`/products/${id}/`);
     },
+
+    // Api cho phần search, filter
+    getList: async (params?: {
+        search?: string;
+        category?: number;
+        status?: "available" | "unavailable";
+        min_price?: number | string;
+        max_price?: number | string;
+    }) => {
+        const { data: newList } = await api.get<ProductInterface[]>("/products/", {
+            params,
+        });
+        return newList;
+    }
 }

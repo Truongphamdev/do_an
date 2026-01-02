@@ -20,7 +20,7 @@ interface AdminHeaderProps {
     style?: any;
 }
 
-const AdminHeader = ({title, showMenuOptions, showAdd, showSearch, showFilter, showBell, showProfile, onAddPress, onMenuOptions, onSearchPress, onFilterPress, onBellPress, onProfilePress, style}: AdminHeaderProps) => {
+export const AdminHeader = ({title, showMenuOptions, showAdd, showSearch, showFilter, showBell, showProfile, onAddPress, onMenuOptions, onSearchPress, onFilterPress, onBellPress, onProfilePress, style}: AdminHeaderProps) => {
 
     return (
         <View style={styles.container}>
@@ -72,8 +72,6 @@ const AdminHeader = ({title, showMenuOptions, showAdd, showSearch, showFilter, s
         </View>
     )
 }
-
-export default AdminHeader
 
 const styles = StyleSheet.create({
     container: {

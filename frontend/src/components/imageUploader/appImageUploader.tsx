@@ -7,9 +7,11 @@ interface AppImageUploaderProps {
     name: string;
     control: Control<any>;
     style?: any;
+
+    imageUrl?: string | null;
 }
 
-export const AppImageUploader: React.FC<AppImageUploaderProps> = ({ name, control, style}) => {
+export const AppImageUploader: React.FC<AppImageUploaderProps> = ({ name, control, style, imageUrl}) => {
     return (
         <Controller 
             control={control}
@@ -17,9 +19,21 @@ export const AppImageUploader: React.FC<AppImageUploaderProps> = ({ name, contro
             render={({ field: { value, onChange } }) => (
                 <ImageUploader
                     name={name}
-                    value={value || null}
+                    /**
+                     * Ảnh hiển thị:
+                     * - Nếu user đẫ chọn ảnh mới -> value
+                     * - Nếu chưa -> imageUrl (ảnh cũ)
+                     */
+                    value={value ?? null}
+                    imageUrl={imageUrl ?? null}
+                    /**
+                     * Khi user chọn ảnh
+                     * -> ghi RNfile vào form
+                     */
+                    onChange={(file: RNfile | null) => {
+                        onChange(file ?? undefined);
+                    }}
                     style={style}
-                    onChange={onChange}
                 />
             )}
         />

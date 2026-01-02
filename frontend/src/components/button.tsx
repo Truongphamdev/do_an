@@ -29,5 +29,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#fff',
         fontWeight: '900',
+        alignItems: "center",
     },
 })
