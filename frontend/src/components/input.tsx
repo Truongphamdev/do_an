@@ -52,7 +52,7 @@ export const AppInput = ({ style, containerStyle, name, control, error, secureTe
                         {/* icon ẩn/hiện mật khẩu */}
                         {secureTextEntry && (
                             <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)} style={{position: "absolute", right: 12, top: 14}}>
-                                <Ionicons name = {isPasswordVisible ? "eye" : "eye-off"} size={20} color="#1ABDBE"/>
+                                <Ionicons name = {isPasswordVisible ? "eye" : "eye-off"} size={20} color="#707070"/>
                             </TouchableOpacity>
                         )}
                     </View>

@@ -256,7 +256,6 @@ const ProductDetail = () => {
                 onToggle={() => handleStatusUpdate(product.id)}
                 value={product.status === "available"}
                 style={styles.swithButton}
-                textStyle={{ color: product.status === "available" ? "#1ABDBE" : "#6d6d6d" }}
               />
             </View>
 
@@ -396,7 +395,6 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   swithButton: {
-    width: 100,
-    padding: 5,
+    
   },
 })

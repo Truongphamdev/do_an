@@ -6,10 +6,9 @@ interface Props {
     value: boolean;
     onToggle: () => void;
     style?: any;
-    textStyle?: any;
 }
 
-export const AppStatusSwitch = ({ value, onToggle, style, textStyle }: Props) => {
+export const AppStatusSwitch = ({ value, onToggle, style }: Props) => {
     return(
         <TouchableOpacity
             onPress={onToggle}
@@ -17,7 +16,7 @@ export const AppStatusSwitch = ({ value, onToggle, style, textStyle }: Props) =>
             style={[
                 styles.container,
                 style,
-                { backgroundColor: value ? "#1ABDBE" : "#ccc" }
+                { backgroundColor: value ? "#34d418" : "#ccc" }
             ]}
         >
             <View
@@ -25,25 +24,23 @@ export const AppStatusSwitch = ({ value, onToggle, style, textStyle }: Props) =>
                     styles.thumb,
                     { alignSelf: value ? "flex-end" : "flex-start" }
                 ]}
-            >
-                <Text style={[styles.textSwitch, textStyle]}>{value ? "ON" : "OFF"}</Text>
-            </View>
+            />
         </TouchableOpacity>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
-        borderRadius: 3,
+        width: 50,
+        height: 28,
+        borderRadius: 14,
+        padding: 2,
+        justifyContent: "center",
     },
     thumb: {
-        width: '50%',
-        borderRadius: 3,
+        width: 24,
+        height: 24,
+        borderRadius: 12,
         backgroundColor: "#fff",
     },
-    textSwitch: {
-        fontSize: 14,
-        textAlign: "center",
-        fontWeight: "bold",
-    }
 })

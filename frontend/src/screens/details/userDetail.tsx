@@ -103,6 +103,7 @@ const UserDetail = () => {
             <View style={styles.item}>
               <Text style={styles.label}>* Trạng thái tài khoản:</Text>
               <Text style={styles.value}>{user.is_active ? "Hoạt động" : "Đã khóa"}</Text>
+              
             </View>
 
             <View style={styles.item}>
@@ -111,11 +112,8 @@ const UserDetail = () => {
             </View>
 
             <View style={styles.buttons}>
-              <TouchableOpacity style={[styles.button, { backgroundColor: "#3a9bfb"} ]} onPress={() => {}}>
+              <TouchableOpacity style={[styles.button, { backgroundColor: "#3a9bfb"} ]} onPress={() => navigation.navigate("AdminAddStaff", { userId: user.id })}>
                 <Text style={styles.textButton}>Sửa</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, { backgroundColor: "#ff3737"} ]} onPress={() => {}}>
-                <Text style={styles.textButton}>Xoá</Text>
               </TouchableOpacity>
             </View>
 

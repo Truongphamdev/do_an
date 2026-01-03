@@ -6,14 +6,14 @@ export interface UserInterface {
     email: string;
     first_name: string;
     last_name: string;
-    phone?: string | null;
-    address?: string | null;
+    phone?: string ;
+    address?: string ;
     role: "waiter" | "chef" | "cashier" | "customer";
     is_active: boolean;
     is_staff?: boolean;
     is_superuser?: boolean;
     date_joined:  string;
-    last_login?: string | null;
+    last_login?: string ;
 }
 
 type staffRole = "waiter" | "chef" | "cashier";

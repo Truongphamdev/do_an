@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useCallback } from 'react'
 // component
 import { AdminHeader } from '../../components'
 // api
@@ -10,14 +10,14 @@ import Icon from "react-native-vector-icons/FontAwesome5"
 import { useNotify } from '../../providers/notificationProvider'
 // navigation
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { AdminStackParamList } from '../../navigation/adminStackNavigation'
 
 
 const AdminStaff = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
   const [ users, setUsers ] = useState<UserInterface[]>([]);
-  const { success, error, confirm } = useNotify();
+  const { success, error } = useNotify();
 
 
   const [ searchText, setSearchText ] = useState("");
@@ -45,9 +45,11 @@ const AdminStaff = () => {
     }
   }
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUsers();
+    }, [])
+  );
 
   // hàm render
   const renderItem = ({item, index}: {item: UserInterface, index: number}) => (
@@ -87,11 +89,8 @@ const AdminStaff = () => {
       </View>
       {/* edit + remove */}
       <View style={styles.actionButtons}>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#3a9bfb" }]} onPress={() => {}}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddStaff", { userId: item.id })}>
           <Text style={styles.actionTextButton}>Sửa</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#ff3737" }]} onPress={() => {}}>
-          <Text style={styles.actionTextButton}>Xóa</Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>

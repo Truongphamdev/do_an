@@ -347,12 +347,20 @@ const AdminProduct = () => {
       </View>
       {/* action button */}
       <View style={styles.actionButtons}>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddProduct", { productId: item.id })}>
-          <Text style={styles.actionTextButton}>Sửa</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#ff3737" }]} onPress={() => handleDelete(item.id)}>
-          <Text style={styles.actionTextButton}>Xóa</Text>
-        </TouchableOpacity>
+        <View style={styles.actionRow}>
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddProduct", { productId: item.id })}>
+            <Text style={styles.actionTextButton}>Sửa</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#ff3737" }]} onPress={() => handleDelete(item.id)}>
+            <Text style={styles.actionTextButton}>Xóa</Text>
+          </TouchableOpacity>
+        </View>
+
+        <AppStatusSwitch
+          value={item.status === "available"}
+          onToggle={() => handleToggleStatus(item.id)}
+          style={styles.swithButton}
+        />
       </View>
     </TouchableOpacity>
   )
@@ -553,7 +561,7 @@ const AdminProduct = () => {
 
             <View style={styles.filterActionButtons}>
               <TouchableOpacity style={[styles.filterActionButton, { backgroundColor: "#909090" }]} onPress={handleResetFilter}>
-                <Text style={styles.filterActionTextButton}>Huỷ</Text>
+                <Text style={styles.filterActionTextButton}>Bỏ lọc</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.filterActionButton, { backgroundColor: "#FCB35E" }]} onPress={() => {applySearchFilter(); closeMenuFilter();}}>
                 <Text style={styles.filterActionTextButton}>Áp dụng</Text>
@@ -821,17 +829,19 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     fontSize: 16,
   },
+  // hình ảnh
   imageWrapper: {
-    flex: 1,
+    width: 60,
     justifyContent: "center",
   },
   image: {
     width: 50,
     height: 50,
   },
+  // thông tin
   content: {
-    flex: 3,
-    paddingLeft: 10,
+    flex: 1,
+    paddingHorizontal: 10,
     justifyContent: "center",
   },
   nameProductWrapper: {
@@ -840,6 +850,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 10,
+    alignSelf: "flex-start",
   },
   nameProduct: {
     fontSize: 18,
@@ -869,12 +880,16 @@ const styles = StyleSheet.create({
     color: "#ff5500",
     fontWeight: "bold",
   },
+  // nút sửa + xóa + switch
   actionButtons: {
-    flex: 1.6,
-    flexDirection: "row",
+    width: 70,
     alignItems: "center",
-    justifyContent: "flex-end",
-    gap: 6,
+    justifyContent: "center",
+    gap: 8,
+  },
+  actionRow: {
+    flexDirection: "row",
+    gap: 8,
   },
   actionButton: {
     padding: 5,
@@ -887,7 +902,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   swithButton: {
-    width: '100%',
-    padding: 5,
+    
   },
 })
