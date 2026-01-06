@@ -112,9 +112,7 @@ export const ProductApi = {
         min_price?: number | string;
         max_price?: number | string;
     }) => {
-        const { data: newList } = await api.get<ProductInterface[]>("/products/", {
-            params,
-        });
-        return newList;
+        const { data } = await api.get<ProductInterface[]>("/products/", { params });
+        return data;
     }
 }

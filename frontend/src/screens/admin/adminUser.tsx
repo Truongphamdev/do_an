@@ -1,9 +1,9 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList } from 'react-native'
+import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity, FlatList, Animated } from 'react-native'
 import React, { useState, useCallback } from 'react'
 // component
 import { AdminHeader } from '../../components'
 // api
-import { UserApi, type UserInterface } from '../../api/user.api'
+import { UserApi, type UserInterface, type userRole } from '../../api/user.api'
 // icon
 import Icon from "react-native-vector-icons/FontAwesome5"
 // thông báo
@@ -12,15 +12,25 @@ import { useNotify } from '../../providers/notificationProvider'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { AdminStackParamList } from '../../navigation/adminStackNavigation'
+import { opacity } from 'react-native-reanimated/lib/typescript/Colors'
 
 
 const AdminStaff = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
   const [ users, setUsers ] = useState<UserInterface[]>([]);
-  const { success, error } = useNotify();
+  const { error } = useNotify();
 
 
   const [ searchText, setSearchText ] = useState("");
+  const [ selectedRole, setSelectedRole ] = useState<userRole | undefined>(undefined);
+  const [ selectedActive, setSelectedActive ] = useState<boolean | undefined>(undefined);
+
+  const DEFAULT_QUERY = {
+    search: "",
+    role: undefined as userRole | undefined,
+    is_active: undefined as boolean | undefined,
+  };
+  const [ query, setQuery ] = useState<typeof DEFAULT_QUERY>(DEFAULT_QUERY);
 
   const ROLE_LABEL: Record<UserInterface["role"], string> = {
     waiter: "Phục vụ",
@@ -28,11 +38,27 @@ const AdminStaff = () => {
     cashier: "Thu ngân",
     customer: "Khách hàng",
   };
+  const ROLE_OPTIONS: { label: string; value?: userRole }[] = [
+    { label: "Tất cả", value: undefined },
+    { label: "Phục vụ", value: "waiter" },
+    { label: "Đầu bếp", value: "chef" },
+    { label: "Thu ngân", value: "cashier" },
+    { label: "Khách hàng", value: "customer" },
+  ];
+  const ACTIVE_OPTIONS: { label: string; value: boolean | undefined }[] = [
+    { label: "Tất cả", value: undefined },
+    { label: "Hoạt động", value: true },
+    { label: "Đã khóa", value: false },
+  ];
 
   // hàm lấy danh sách người dùng
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
-      const users = await UserApi.getAll();
+      const users = await UserApi.getList({
+        search: query.search || undefined,
+        role: query.role,
+        is_active: query.is_active,
+      });
 
       const sorted = [...users].sort(
         (a, b) => 
@@ -43,13 +69,78 @@ const AdminStaff = () => {
     } catch (err: any) {
       error("Lấy danh sách người dùng thất bại!");
     }
-  }
+  }, [query]);
 
   useFocusEffect(
     useCallback(() => {
       fetchUsers();
-    }, [])
+    }, [fetchUsers])
   );
+
+
+  // --- STATE VÀ ANIMATION MENU FILTER ---
+  // state dành cho menu filter
+  const [ filterOpen, setFilterOpen ] = useState(false);
+  const filterAnim = useState(new Animated.Value(300))[0];
+  const filterFade = useState(new Animated.Value(0))[0];
+  // chức năng mở menu filter
+  const openFilter = () => {
+    setFilterOpen(true);
+    Animated.parallel([
+      Animated.timing(filterAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(filterFade, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+      })
+    ]).start();
+  };
+  // chức năng đóng menu filter
+  const closeFilter = () => {
+    Animated.parallel([
+      Animated.timing(filterAnim, {
+        toValue: 300,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(filterFade, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => setFilterOpen(false));
+  };
+
+
+
+  // hàm cofirm search + filter
+  const applySearchFilter = () => {
+    setQuery({
+      search: searchText.trim(),
+      role: selectedRole,
+      is_active: selectedActive,
+    });
+  };
+  // hàm reset filter
+  const handleResetFilter = () => {
+    setSelectedRole(undefined);
+    setSelectedActive(undefined);
+    setQuery(DEFAULT_QUERY);
+    setFilterOpen(false);
+  }
+  // hàm reset search
+  const handleClearSearch = () => {
+    setSearchText("");
+    setQuery(prev => ({
+      ...prev,
+      search: "",
+    }));
+  };
+
 
   // hàm render
   const renderItem = ({item, index}: {item: UserInterface, index: number}) => (
@@ -98,7 +189,10 @@ const AdminStaff = () => {
 
   return (
     <>
-      <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
         <AdminHeader
           title='Quản lý người dùng'
         />
@@ -112,15 +206,15 @@ const AdminStaff = () => {
               style={styles.searchInput}
             />
             {searchText.length > 0 && (
-              <TouchableOpacity onPress={() => {}} style={styles.clearSearchButton}>
+              <TouchableOpacity onPress={handleClearSearch} style={styles.clearSearchButton}>
                 <Icon name='times-circle' size={16} color="#909090" />
               </TouchableOpacity>
             )}
           </View>
-          <TouchableOpacity onPress={() => {}} style={styles.searchButton}>
+          <TouchableOpacity onPress={applySearchFilter} style={styles.searchButton}>
             <Icon name='search' size={16} color="#909090"/>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => {}} style={styles.filterButton}>
+          <TouchableOpacity onPress={openFilter} style={styles.filterButton}>
             <Icon name='filter' size={16} color="#909090"/>
           </TouchableOpacity>
         </View>
@@ -131,7 +225,90 @@ const AdminStaff = () => {
           keyExtractor={(item) => item.id.toString()}
           style={{ padding: 5, marginTop: 5, }}
         />
-      </View>
+      </ScrollView>
+
+      {/* FILTER */}
+      {filterOpen && (
+        <>
+          <Animated.View style={[ styles.overlayFilter, { opacity: filterFade}]} pointerEvents={filterOpen ? "auto" : "none"}>
+            <TouchableOpacity style={{ flex: 1, }} activeOpacity={1} onPress={closeFilter} />
+          </Animated.View>
+
+          <Animated.View style={[
+              styles.containerMenuFilter,
+              {
+                opacity: filterFade,
+                transform: [{ translateX: filterAnim }],
+              }
+            ]}
+          >
+            <Text style={styles.filterTitle}>Lọc</Text>
+            {/* Role filter */}
+            <Text style={styles.filterOptionTitle}>Vai trò:</Text>
+            <View style={styles.filterOptions}>
+              {ROLE_OPTIONS.map((role) => {
+                const isActive = selectedRole === role.value;
+
+                return (
+                  <TouchableOpacity
+                    key={role.label}
+                    style={[
+                      styles.filterOption,
+                      isActive && styles.filterActive
+                    ]}
+                    onPress={() => setSelectedRole(role.value)}
+                  >
+                    <Text
+                      style={[
+                      styles.filterTextOption,
+                      isActive && { color: "#fff", fontWeight: "bold" }
+                    ]}
+                    >
+                      {role.label}
+                    </Text>
+                  </TouchableOpacity>
+                )
+              })}
+            </View>
+
+            {/* active filter */}
+            <Text style={styles.filterOptionTitle}>Trạng thái hoạt động:</Text>
+            <View style={styles.filterOptions}>
+              {ACTIVE_OPTIONS.map((option) => {
+                const isActive = selectedActive === option.value;
+
+                return (
+                  <TouchableOpacity
+                    key={option.label}
+                    style={[
+                      styles.filterOption,
+                      isActive && styles.filterActive
+                    ]}
+                    onPress={() => setSelectedActive(option.value)}
+                  >
+                    <Text
+                      style={[
+                        styles.filterTextOption,
+                        isActive && { color: "#fff", fontWeight: "bold" }
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                )
+              })}
+            </View>
+            <View style={styles.filterActionButtons}>
+              <TouchableOpacity style={[styles.filterActionButton, { backgroundColor: "#909090" }]} onPress={handleResetFilter}>
+                <Text style={styles.filterActionTextButton}>Bỏ lọc</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.filterActionButton, { backgroundColor: "#FCB35E" }]} onPress={() => {applySearchFilter(); closeFilter();}}>
+                <Text style={styles.filterActionTextButton}>Áp dụng</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </>
+      )}
 
       <TouchableOpacity style={styles.fabButton} onPress={() => {navigation.navigate("AdminAddStaff", {})}}>
         <Icon name='plus' size={24} color="#fff" />
@@ -294,5 +471,79 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 12,
     marginLeft: 100,
+  },
+
+
+  // FILTER STYLE
+  overlayFilter: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    right: 0,
+    left: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.4)",
+    zIndex: 900,
+  },
+  containerMenuFilter: {
+    position: "absolute",
+    backgroundColor: "#fff",
+    top: 0,
+    right: 0,
+    width: 260,
+    zIndex: 999,
+    elevation: 5,
+  },
+  filterTitle: {
+    fontSize: 28,
+    padding: 10,
+    fontWeight: "900",
+    color: "#fff",
+    backgroundColor: "#1ABDBE",
+  },
+  filterOptionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#1ABDBE",
+    marginTop: 8,
+    marginLeft: 10,
+  },
+  filterOptions: {
+    padding: 10,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  filterOption: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "#909090",
+  },
+  filterTextOption: {
+    fontSize: 16,
+    color: "#333",
+  },
+  filterActive: {
+    backgroundColor: "#1ABDBE",
+    borderColor: "#1ABDBE",
+  },
+  filterActionButtons: {
+    marginTop: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 10,
+  },
+  filterActionButton: {
+    width: '40%',
+    borderRadius: 3,
+    padding: 5,
+  },
+  filterActionTextButton: {
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "#fff",
   },
 })

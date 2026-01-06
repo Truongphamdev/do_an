@@ -9,7 +9,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 // validate
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { addStaffSchema, editStaffSchema, registerSchema, type registerForm } from '../../validation/authValidation'
+import { type registerForm, registerSchema } from '../../validation/authValidation'
 // thông báo
 import { useNotify } from '../../providers/notificationProvider'
 // api
@@ -36,31 +36,50 @@ const AdminAddStaff = () => {
   const userId = route.params?.userId;
   const isEditing = Boolean(userId);
   
-  const form = useForm<any>({
-    resolver: zodResolver(isEditing ? editStaffSchema : addStaffSchema),
+  const { control, handleSubmit, formState: {errors}, setError, setValue, } = useForm<registerForm>({
+    resolver: zodResolver(registerSchema(isEditing)),
     defaultValues: {
-      username: "",
       first_name: "",
       last_name: "",
-      email: "",
-      password: "",
-      role: "",
       phone: "",
       address: "",
+      ...(isEditing
+        ? {}
+        : {
+          username: "",
+          email: "",
+          password: "",
+          role: undefined,
+        }
+      ),
     },
   });
-
-  const { control, handleSubmit, formState: {errors}, setError, setValue, } = form;
   
   // Hàm chức năng tạo tài khoản
   const handleSubmitForm = async (data: registerForm) => {
+    console.log("🔥 SUBMIT FORM DATA:", data);
     try {
       setLoading(true);
 
       if (isEditing) {
-
+        await UserApi.updateStaff(userId!, {
+          first_name: data.first_name,
+          last_name: data.last_name,
+          phone: data.phone,
+          address: data.address,
+        });
+        success("Cập nhật thông tin nhân viên thành công!");
       } else {
-        await authApi.register(data);
+        await authApi.register({
+          email: data.email!,
+          username: data.username!,
+          password: data.password!,
+          role: data.role!,
+          first_name: data.first_name,
+          last_name: data.last_name,
+          phone: data.phone,
+          address: data.address,
+        });
         success("Tạo tài khoản thành công!");
       }
 
@@ -86,8 +105,8 @@ const AdminAddStaff = () => {
 
       setValue("first_name", userById.first_name);
       setValue("last_name", userById.last_name);
-      setValue("phone", userById.phone);
-      setValue("address", userById.address);
+      setValue("phone", userById.phone ?? "");
+      setValue("address", userById.address ?? "");
 
     } catch (err: any) {
       error("Lấy thông tin người dùng thất bại!");
@@ -119,7 +138,7 @@ const AdminAddStaff = () => {
             <AppInput
               name='username'
               control={control}
-              error={errors.username?.message as string | undefined}
+              error={errors.username?.message}
             />
           </View>
         )}
@@ -128,7 +147,7 @@ const AdminAddStaff = () => {
           <AppInput
             name='first_name'
             control={control}
-            error={errors.first_name?.message as string | undefined}
+            error={errors.first_name?.message}
           />
         </View>
         <View style={styles.item}>
@@ -136,7 +155,7 @@ const AdminAddStaff = () => {
           <AppInput
             name='last_name'
             control={control}
-            error={errors.last_name?.message as string | undefined}
+            error={errors.last_name?.message}
           />
         </View>
         {!isEditing && (
@@ -147,7 +166,7 @@ const AdminAddStaff = () => {
               control={control}
               options={ROLE_OPTIONS}
               label='Chọn chức vụ'
-              error={errors.role?.message as string | undefined}
+              error={errors.role?.message}
             />
           </View>
         )}
@@ -159,7 +178,7 @@ const AdminAddStaff = () => {
               control={control}
               keyboardType="email-address"
               autoCapitalize="none"
-              error={errors.email?.message as string | undefined}
+              error={errors.email?.message}
             />
           </View>
         )}
@@ -170,22 +189,20 @@ const AdminAddStaff = () => {
             control={control}
             keyboardType='phone-pad'
             placeholder="VD: 0901234567"
-            error={errors.phone?.message as string | undefined}
+            error={errors.phone?.message}
             onChangeText={(text: string) =>
               text.replace(/[^0-9+]/g, "")
             }
           />
         </View>
-        {isEditing && (
-          <View style={styles.item}>
-            <Text style={styles.label}>Địa chỉ</Text>
-            <AppInput
-              name='address'
-              control={control}
-              error={errors.address?.message as string | undefined}
-            />
-          </View>
-        )}
+        <View style={styles.item}>
+          <Text style={styles.label}>Địa chỉ</Text>
+          <AppInput
+            name='address'
+            control={control}
+            error={errors.address?.message}
+          />
+        </View>
         {!isEditing && (
           <View style={styles.item}>
             <Text style={styles.label}>Mật khẩu</Text>
@@ -193,7 +210,7 @@ const AdminAddStaff = () => {
               name='password'
               control={control}
               secureTextEntry={true}
-              error={errors.password?.message as string | undefined}
+              error={errors.password?.message}
             />
           </View>
         )}

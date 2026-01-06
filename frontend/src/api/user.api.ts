@@ -16,7 +16,8 @@ export interface UserInterface {
     last_login?: string ;
 }
 
-type staffRole = "waiter" | "chef" | "cashier";
+export type staffRole = "waiter" | "chef" | "cashier";
+export type userRole = staffRole | "customer";
 
 export const UserApi = {
     getAll: async () => {
@@ -45,4 +46,18 @@ export const UserApi = {
     changeRole: (id: number, role: staffRole) => {
         return api.patch(`admin/users/${id}/change_role/`, { role });
     },
+
+    updateStaff: async (id: number, data: any) => {
+        return api.patch(`admin/users/${id}/update_staff/`, data);
+    },
+
+    getList: async (params?: {
+        search?: string;
+        role?: userRole;
+        is_active?: boolean;
+        sort?: "newest" | "oldest" | "name_asc" | "name_desc";
+    }) => {
+        const { data } = await api.get<UserInterface[]>("admin/users/", { params });
+        return data;
+    }
 }
