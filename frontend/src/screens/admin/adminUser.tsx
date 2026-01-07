@@ -9,14 +9,12 @@ import Icon from "react-native-vector-icons/FontAwesome5"
 // thông báo
 import { useNotify } from '../../providers/notificationProvider'
 // navigation
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
-import { AdminStackParamList } from '../../navigation/adminStackNavigation'
-import { opacity } from 'react-native-reanimated/lib/typescript/Colors'
+import { AdminNav } from '../../navigation/adminStackNavigation'
 
 
 const AdminStaff = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
+  const navigation = useNavigation<AdminNav>();
   const [ users, setUsers ] = useState<UserInterface[]>([]);
   const { error } = useNotify();
 
@@ -189,13 +187,8 @@ const AdminStaff = () => {
 
   return (
     <>
-      <ScrollView
-        contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}
-      >
-        <AdminHeader
-          title='Quản lý người dùng'
-        />
+      <View style={styles.container}>
+        <Text style={styles.headerTitle}>Quản lý người dùng</Text>
 
         <View style={styles.boxSearch}>
           <View style={styles.searchInputWrapper}>
@@ -225,7 +218,7 @@ const AdminStaff = () => {
           keyExtractor={(item) => item.id.toString()}
           style={{ padding: 5, marginTop: 5, }}
         />
-      </ScrollView>
+      </View>
 
       {/* FILTER */}
       {filterOpen && (
@@ -326,6 +319,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: "#e1f3f8",
   },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#1ABDBE",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  
   // input tìm kiếm
   boxSearch: {
     flexDirection: "row",

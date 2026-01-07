@@ -33,9 +33,6 @@ class BaseConsumer(AsyncWebsocketConsumer):
 
 class ProductConsumer(BaseConsumer):
     group_name = "products"
-
-class CategoryConsumer(BaseConsumer):
-    group_name = "categories"
     
 class ImageConsumer(BaseConsumer):
     group_name = "images"

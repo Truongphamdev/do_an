@@ -1,10 +1,9 @@
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, FlatList, TextInput, Animated, Easing } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, TextInput, Animated, Easing } from 'react-native'
 import React, { useState, useCallback } from 'react'
 // componet tái sử dụng
-import { AppStatusSwitch, AdminHeader } from '../../components'
+import { AppStatusSwitch } from '../../components'
 // navigation
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { AdminStackParamList } from '../../navigation/adminStackNavigation'
+import { AdminNav } from '../../navigation/adminStackNavigation'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 // icon
 import Icon from "react-native-vector-icons/FontAwesome5"
@@ -21,7 +20,7 @@ import { useWebSocket } from '../../hooks/useWebsocket'
 const placeholderImageProduct = require("../../assets/images/placeholderProduct.png");
 
 const AdminProduct = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
+  const navigation = useNavigation<AdminNav>();
   const [ products, setProducts ] = useState<ProductInterface[]>([]);
   const { success, error, confirm } = useNotify();
   const { categories } = useCategories();
@@ -370,13 +369,8 @@ const AdminProduct = () => {
 
   return (
     <>
-      <ScrollView
-        contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}
-      >
-        <AdminHeader
-          title='Quản lý sản phẩm'
-        />
+      <View style={styles.container}>
+        <Text style={styles.headerTitle}>Quản lý sản phẩm</Text>
 
         <View style={styles.boxSearch}>
           <View style={styles.searchInputWrapper}>
@@ -414,7 +408,7 @@ const AdminProduct = () => {
           </View>
         )}
 
-      </ScrollView>
+      </View>
       
       
       {/* MUNE BUTTON FAB */}
@@ -585,6 +579,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     flexGrow: 1,
     backgroundColor: "#e1f3f8",
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#1ABDBE",
+    marginBottom: 20,
+    textAlign: "center",
   },
 
   // input tìm kiếm

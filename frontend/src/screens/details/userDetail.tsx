@@ -1,9 +1,8 @@
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, } from 'react-native'
 import React, { useState, useEffect, useCallback } from 'react'
 // navifation
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native'
-import { AdminStackParamList } from '../../navigation/adminStackNavigation'
+import { AdminStackParamList, AdminNav } from '../../navigation/adminStackNavigation'
 // component
 import { AppLoadingOverlay, AppStatusSwitch } from '../../components'
 // thông báo
@@ -16,11 +15,11 @@ import Icon from "react-native-vector-icons/FontAwesome5"
 import { formatDateTime } from '../../utils/date'
 
 
-type AdminUserDetailRouteProp = RouteProp<AdminStackParamList, "UserDetail">;
+type AdminUserDetailRoute = RouteProp<AdminStackParamList, "UserDetail">;
 
 const UserDetail = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
-  const route = useRoute<AdminUserDetailRouteProp>();
+  const navigation = useNavigation<AdminNav>();
+  const route = useRoute<AdminUserDetailRoute>();
   const userId = route.params?.userId;
 
   const [ user, setUser ] = useState<UserInterface>();

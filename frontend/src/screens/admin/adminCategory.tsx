@@ -1,53 +1,28 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { FlatList } from 'react-native-gesture-handler'
 // navigation
-import { useNavigation } from '@react-navigation/native'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { AdminStackParamList } from '../../navigation/adminStackNavigation'
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
+import { AdminNav } from '../../navigation/adminStackNavigation'
 // icon
 import Icon from "react-native-vector-icons/FontAwesome5"
 // api
-import { CategoryApi, type Category } from '../../api/category.api'
+import { CategoryApi, type CategoryInterface } from '../../api/category.api'
 // thông báo
 import { useNotify } from '../../providers/notificationProvider'
 
-// WebSocket
-import { useWebSocket } from '../../hooks/useWebsocket'
-
 const AdminCategory = () => {
-    const [ showContainerInput, setShowContainerInput ] = useState(false);
     const { success, error, confirm } = useNotify();
-    const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
-    const [ categories, setCategories ] = useState<Category[]>([]);
+    const navigation = useNavigation<AdminNav>();
+    const [ categories, setCategories ] = useState<CategoryInterface[]>([]);
 
     // Khi khởi động màn hình app thì gọi các hàm trong useEffect
-    useEffect(() => {
-        fetchCategories();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            fetchCategories();
+        }, [])
+    );
 
-    // WebSocket
-    useWebSocket((message) => {
-        console.log("📌 Realtime message:", message);
-
-        switch(message.type) {
-            case "CATEGORY_CREATED":
-                setCategories(prev => [message.category, ...prev]);
-                break;
-            
-            case "CATEGORY_UPDATED":
-                setCategories(prev => prev.map(item => item.id === message.category.id ? message.category : item));
-                break;
-
-            case "CATEGORY_DELETED":
-                setCategories(prev => prev.filter(item => item.id !== message.id));
-                break;
-
-            default:
-                console.log("❓ Unknown realtime type", message.type);
-        }
-    }, "ws://10.0.2.2:8000/ws/categories/");
-    
     // Hàm chức năng lấy danh sách danh mục
     const fetchCategories = async () => {
         try {
@@ -82,7 +57,7 @@ const AdminCategory = () => {
     }
 
     // Render item danh sách danh mục
-    const renderItem = ({ item, index }: { item: Category, index: number }) => (
+    const renderItem = ({ item, index }: { item: CategoryInterface, index: number }) => (
         <TouchableOpacity
             style={styles.itemCategory}
             onPress={() => navigation.navigate("CategoryDetail", { categoryId: item.id })}

@@ -2,8 +2,7 @@ import { ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-nati
 import React, { useEffect, useState } from 'react';
 // naviagation
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AdminStackParamList } from '../../navigation/adminStackNavigation';
+import { AdminStackParamList, AdminNav } from '../../navigation/adminStackNavigation';
 // icon
 import Icon from "react-native-vector-icons/FontAwesome5";
 // component
@@ -23,7 +22,7 @@ import { ImageApi } from '../../api/image.api';
 import { isLocalImage } from '../../utils/isLocalImage';
 import { getBackendErrorMessage } from '../../utils/getBackendError';
 
-type AdminAddProductRouteProp = RouteProp<AdminStackParamList, 'AdminAddProduct'>;
+type AdminAddProductRoute = RouteProp<AdminStackParamList, 'AdminAddProduct'>;
 
 const AdminAddProduct = () => {
     const { control, handleSubmit, formState: {errors}, setValue } = useForm<productForm>({
@@ -36,14 +35,14 @@ const AdminAddProduct = () => {
             image: undefined,
         }
     });
-    
-    const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
+
+    const navigation = useNavigation<AdminNav>();
     const { categories } = useCategories();
     const { success, error } = useNotify();
     const [ loading, setLoading ] = useState(false);
 
     // state cho phần nhận productId
-    const route = useRoute<AdminAddProductRouteProp>();
+    const route = useRoute<AdminAddProductRoute>();
     const productId = route.params?.productId;
     const isEditting = Boolean(productId);
     const [ imageUrl, setImageUrl ] = useState<string | null>(null);

@@ -79,13 +79,25 @@ class Reservation(models.Model):
 
     def __str__(self):
         return f"Reservation for {self.customer_name} at {self.reservation_time}"
+# CART MODEL
+class Cart(models.Model):
+    table = models.OneToOneField(Table, related_name='cart', on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=(
+        ('active', 'Active'),
+        ('locked', 'Locked'),
+    ), default='active')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Cart for Table {self.table.number}"
 
 # CARTITEM MODEL
 class CartItem(models.Model):
-    table = models.ForeignKey(Table, related_name='cart_items', on_delete=models.CASCADE)
+    cart = models.ForeignKey(Cart, related_name='cart_items', on_delete=models.CASCADE)
     product = models.ForeignKey(Product, related_name='cart_items', on_delete=models.CASCADE)
     quantity = models.IntegerField()
-    description = models.TextField(blank=True, null=True)
+    note = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

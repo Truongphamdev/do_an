@@ -3,9 +3,8 @@ import React, { useState, useEffect } from 'react'
 // components
 import { AppButton, AppDropdown, AppInput, AppLoadingOverlay } from '../../components'
 // navigation
-import { AdminStackParamList } from '../../navigation/adminStackNavigation'
+import { AdminStackParamList, AdminNav } from '../../navigation/adminStackNavigation'
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 // validate
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -18,7 +17,7 @@ import { UserApi } from '../../api/user.api'
 // icon
 import Icon from "react-native-vector-icons/FontAwesome5"
 
-type AdminAddStaffRouteProp = RouteProp<AdminStackParamList, "AdminAddStaff">;
+type AdminAddStaffRoute = RouteProp<AdminStackParamList, "AdminAddStaff">;
 
 const AdminAddStaff = () => {
   
@@ -30,9 +29,9 @@ const AdminAddStaff = () => {
   
   const { success, error } = useNotify();
   const [ loading, setLoading ] = useState(false);
-  const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
+  const navigation = useNavigation<AdminNav>();
   
-  const route = useRoute<AdminAddStaffRouteProp>();
+  const route = useRoute<AdminAddStaffRoute>();
   const userId = route.params?.userId;
   const isEditing = Boolean(userId);
   

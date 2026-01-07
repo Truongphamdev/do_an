@@ -1,8 +1,7 @@
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native'
 import React, { useEffect } from 'react'
 // navigation
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { AdminStackParamList } from '../../navigation/adminStackNavigation'
+import { AdminNav, AdminStackParamList } from '../../navigation/adminStackNavigation'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 // nhập liệu
 import { AppInput, AppTextArea } from '../../components'
@@ -17,7 +16,7 @@ import { useNotify } from '../../providers/notificationProvider'
 // icon
 import Icon from "react-native-vector-icons/FontAwesome5";
 
-type AdminAddCategoryRouteProp = RouteProp<AdminStackParamList, 'AdminAddCategory'>;
+type AdminAddCategoryRoute = RouteProp<AdminStackParamList, 'AdminAddCategory'>;
 
 const AdminAddCategory = () => {
     const { control, handleSubmit, formState: { errors }, setValue } = useForm<categoryForm>({
@@ -29,8 +28,8 @@ const AdminAddCategory = () => {
     });
 
     const { success, error } = useNotify();
-    const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
-    const route = useRoute<AdminAddCategoryRouteProp>();
+    const navigation = useNavigation<AdminNav>();
+    const route = useRoute<AdminAddCategoryRoute>();
     const categoryId = route.params?.categoryId;
     const isEditing = Boolean(categoryId);
 

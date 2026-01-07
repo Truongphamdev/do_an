@@ -1,9 +1,8 @@
 import { StyleSheet, Text, ScrollView, TouchableOpacity, View, FlatList, Image, useWindowDimensions } from 'react-native'
 import React, { useState, useCallback } from 'react'
 // navigation
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native'
-import { AdminStackParamList } from '../../navigation/adminStackNavigation'
+import { AdminStackParamList, AdminNav } from '../../navigation/adminStackNavigation'
 // icon
 import Icon from "react-native-vector-icons/FontAwesome5"
 // thông báo
@@ -16,11 +15,11 @@ import { formatDateTime } from '../../utils/date'
 // component
 import { AppLoadingOverlay, AppStatusSwitch } from '../../components'
 
-type AdminProductDetailRouteProp = RouteProp<AdminStackParamList, "ProductDetail">;
+type AdminProductDetailRoute = RouteProp<AdminStackParamList, "ProductDetail">;
 
 const ProductDetail = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
-  const route = useRoute<AdminProductDetailRouteProp>();
+  const navigation = useNavigation<AdminNav>();
+  const route = useRoute<AdminProductDetailRoute>();
   const productId = route.params?.productId;
 
   const [ product, setProduct ] = useState<ProductInterface | null>(null);
