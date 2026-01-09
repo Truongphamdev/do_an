@@ -6,5 +6,4 @@ class ApiConfig(AppConfig):
     name = 'api'
     
     def ready(self):
-        import api.signals.category_signals
         import api.signals.product_signals

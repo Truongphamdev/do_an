@@ -6,14 +6,15 @@ from django.db import transaction
 class TableSerializer(serializers.ModelSerializer):
     class Meta:
         model = Table
-        fields = ('id','number','capacity','status','created_at','updated_at')
+        fields = ('id','number','capacity','status','is_active','created_at','updated_at')
         read_only_fields = ('id','created_at','updated_at')
     def validate_number(self, value):
-        if not value:
-            raise serializers.ValidationError("Số bàn không được để trống.")
-        if int(value) <= 0:
+        if value <= 0:
             raise serializers.ValidationError("Số bàn phải là số nguyên dương.")
-        if Table.objects.filter(number=value).exists():
+        queryset = Table.objects.filter(number=value)
+        if self.instance:
+            queryset = queryset.exclude(id=self.instance.id)
+        if queryset.exists():
             raise serializers.ValidationError("Số bàn đã tồn tại.")
         return value
     
