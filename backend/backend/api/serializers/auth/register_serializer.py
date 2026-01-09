@@ -2,6 +2,7 @@ from rest_framework import serializers
 from api.models import User
 from django.db import transaction
 import re
+import unicodedata
 
 class RegisterSerializer(serializers.ModelSerializer):
     ROLE_CHOICES = [
@@ -19,9 +20,16 @@ class RegisterSerializer(serializers.ModelSerializer):
     role = serializers.ChoiceField(choices=ROLE_CHOICES, default='customer')
     address = serializers.CharField(required=False, allow_blank=True)
     phone = serializers.CharField(required=False, allow_blank=True)
+    
+    # username
+    username = serializers.CharField(
+        required=False,
+        allow_blank=True
+    )
+    
     class Meta:
         model = User
-        fields = ( 'email', 'password', 'first_name', 'last_name', 'phone', 'address', 'role')
+        fields = ( 'username', 'email', 'password', 'first_name', 'last_name', 'phone', 'address', 'role')
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -31,12 +39,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         if value is None or value == '':
             raise serializers.ValidationError("Email không được để trống.")
         return value
-    def validate(self, attrs):
-        username = attrs.get('username')
-        lastname = attrs.get('last_name')
-        if not username:
-            attrs['username'] = lastname  # Set username mặc định từ last_name
-        return attrs
+    # def validate(self, attrs):
+    #     username = attrs.get('username')
+    #     lastname = attrs.get('last_name')
+    #     if not username:
+    #         attrs['username'] = lastname  # Set username mặc định từ last_name
+    #     return attrs
     def validate_role(self, value):
         roles = [choice[0] for choice in self.ROLE_CHOICES]
         if value not in roles:
@@ -72,6 +80,29 @@ class RegisterSerializer(serializers.ModelSerializer):
             print(f"{k}: {v}")
         print("======================")
         password = validated_data.pop('password')
+        
+        #--------- XỬ LÝ USERNAME ---------
+        base_username = (
+            validated_data.get('username')
+            or validated_data.get('last_name')
+        )
+        # bỏ khoản trắng đầu cuối + space giữa
+        base_username = base_username.strip().replace(" ", "")
+        # bỏ dấu
+        base_username = unicodedata.normalize('NFKD', base_username)\
+            .encode('ascii', 'ignore')\
+            .decode('ascii')
+        
+        username = base_username
+        counter = 1
+        
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+            
+        validated_data['username'] = username
+        #----------------------------------
+        
         user = User(**validated_data)
         user.set_password(password)
         user.save()

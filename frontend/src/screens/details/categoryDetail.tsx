@@ -1,9 +1,8 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 // navigation
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { AdminStackParamList } from '../../navigation/adminStackNavigation'
+import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native'
+import { AdminStackParamList, AdminNav } from '../../navigation/adminStackNavigation'
 // icon
 import Icon from "react-native-vector-icons/FontAwesome5"
 // api
@@ -13,21 +12,23 @@ import { useNotify } from '../../providers/notificationProvider'
 // utils
 import { formatDateTime } from '../../utils/date'
 
-type CategoryDetailRouteProp = RouteProp<AdminStackParamList, 'CategoryDetail'>;
+type AdminDetailCategoryRoute = RouteProp<AdminStackParamList, 'CategoryDetail'>;
 
 const CategoryDetail = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
+  const navigation = useNavigation<AdminNav>();
   const [ category, setCategory ] = useState<CategoryInterface | null>(null);
   const { confirm, success, error } = useNotify();
   
-  const route = useRoute<CategoryDetailRouteProp>();
+  const route = useRoute<AdminDetailCategoryRoute>();
   const categoryId = route.params?.categoryId;
 
-  useEffect(() => {
-    if(categoryId) {
-      fetchCategory(categoryId);
-    }
-  }, [categoryId]);
+  useFocusEffect(
+    useCallback(() => {
+      if(categoryId) {
+        fetchCategory(categoryId);
+      }
+    }, [categoryId])
+  );
 
   const fetchCategory = async (id: number) => {
     try {

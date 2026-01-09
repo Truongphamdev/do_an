@@ -6,7 +6,9 @@ export interface Register {
     username: string;
     first_name: string;
     last_name: string;
-    role: string;
+    role: 'waiter' | 'chef' | 'cashier' | 'customer';
+    phone?: string;
+    address?: string;
 }
 
 export interface Login {

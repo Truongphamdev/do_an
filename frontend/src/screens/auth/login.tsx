@@ -127,6 +127,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
+    color: "#909090",
     fontWeight: "bold",
   },
   boxButton: {

@@ -3,11 +3,12 @@ from api.models import CartItem,Product,Table
 from api.serializers import ProductSerializer,TableSerializer
 
 from django.db import models
+
 class CartItemSerializer(serializers.ModelSerializer):
     total = serializers.SerializerMethodField()
     class Meta:
         model = CartItem
-        fields = ('id', 'table', 'product', 'description', 'quantity','total', 'created_at')
+        fields = ('id', 'cart', 'product', 'note', 'quantity','total', 'created_at')
         read_only_fields = ('id', 'created_at')
     def validate_product(self,value):
         product = Product.objects.filter(id=value.id).first()
@@ -16,10 +17,9 @@ class CartItemSerializer(serializers.ModelSerializer):
         if product.status != 'available':
             raise serializers.ValidationError("Sản phẩm không khả dụng.")
         return value
-    def validate_table(self,value):
-        table = Table.objects.filter(id=value.id).first()
-        if not table:
-            raise serializers.ValidationError("Bàn không tồn tại.")
+    def validate_cart(self, value):
+        if value.status != 'active':
+            raise serializers.ValidationError("Giỏ hàng không khả dụng.")
         return value
     def validate_quantity(self,value):
         if value <= 0:
@@ -28,25 +28,24 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_total(self,obj):
         return obj.quantity * obj.product.price
     def create(self, validated_data):
-        table = validated_data['table']
+        cart = validated_data['cart']
         product = validated_data['product']
         quantity = validated_data.get('quantity', 1)
-        description = validated_data.get('description', '')
-        if product.status != "available":
-            raise serializers.ValidationError("Sản phẩm này hiện không còn khả dụng.")
-
+        note = validated_data.get('note', '')
 
         cart_item, created = CartItem.objects.get_or_create(
-            table=table,
+            cart=cart,
             product=product,
-            defaults={'description': "", 'quantity': 0}
+            defaults={'quantity': 0, 'note': ""}
         )
         if created:
             cart_item.quantity = quantity
-            cart_item.description = description
+            cart_item.note = note
         else:
             cart_item.quantity +=quantity
-            cart_item.description = description
+            cart_item.note = note
+            
+        table = cart.table
         if table.status in ["available","reserved"]:
             table.status = "occupied"
             table.save(update_fields=['status'])
@@ -55,22 +54,23 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         quantity = validated_data.get('quantity',instance.quantity)
-        description = validated_data.get('description',instance.description)
+        note = validated_data.get('note',instance.note)
         if quantity <= 0:
-            table = instance.table
+            cart = instance.cart
             instance.delete()
-            if not CartItem.objects.filter(table=table).exists():
+            if not cart.cart_items.exists():
+                table = cart.table
                 table.status = "available"
                 table.save(update_fields=['status'])
             return None
         else:
             instance.quantity = quantity
-            instance.description = description
+            instance.note = note
             instance.save()
             return instance
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['product'] = ProductSerializer(instance.product).data
-        representation['table'] = TableSerializer(instance.table).data
+        representation['table'] = TableSerializer(instance.cart.table).data
         return representation
 

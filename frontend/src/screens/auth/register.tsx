@@ -16,14 +16,14 @@ import { authApi } from '../../api/auth.api'
 
 const Register = () => {
   const { control, handleSubmit, formState: { errors }, setError } = useForm<registerForm>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registerSchema(false)),
     defaultValues: {
       username: "",
       first_name: "",
       last_name: "",
       email: "",
       password: "",
-      role: "",
+      role: "customer",
     },
   });
 
@@ -35,7 +35,14 @@ const Register = () => {
   const handleRegister = async (data: registerForm) => {
     try {
       setLoading(true);
-      await authApi.register(data);
+      await authApi.register({
+        username: data.username!,
+        email: data.email,
+        password: data.password!,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        role: "customer",
+      });
       // Thông báo
       success("Tạo tài khoản thành công!");
       // Điều hướng
@@ -145,6 +152,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
+    color: "#909090",
     fontWeight: "bold",
   },
   boxButton: {

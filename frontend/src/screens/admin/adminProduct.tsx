@@ -1,10 +1,9 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, TextInput, Animated, Easing } from 'react-native'
 import React, { useState, useCallback } from 'react'
 // componet tái sử dụng
-import { AppStatusSwitch, AdminHeader } from '../../components'
+import { AppStatusSwitch } from '../../components'
 // navigation
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { AdminStackParamList } from '../../navigation/adminStackNavigation'
+import { AdminNav } from '../../navigation/adminStackNavigation'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 // icon
 import Icon from "react-native-vector-icons/FontAwesome5"
@@ -21,7 +20,7 @@ import { useWebSocket } from '../../hooks/useWebsocket'
 const placeholderImageProduct = require("../../assets/images/placeholderProduct.png");
 
 const AdminProduct = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<AdminStackParamList>>();
+  const navigation = useNavigation<AdminNav>();
   const [ products, setProducts ] = useState<ProductInterface[]>([]);
   const { success, error, confirm } = useNotify();
   const { categories } = useCategories();
@@ -273,7 +272,7 @@ const AdminProduct = () => {
   const filterAnim = useState(new Animated.Value(300))[0]; // từ ngoài màn
   const filterFade = useState(new Animated.Value(0))[0];
   // chức năng mở menu filter
-  const openMenuFilter = () => {
+  const openFilter = () => {
     setFilterOpen(true);
     Animated.parallel([
       Animated.timing(filterAnim, {
@@ -289,7 +288,7 @@ const AdminProduct = () => {
     ]).start();
   };
   // chức năng đóng menu filter
-  const closeMenuFilter = () => {
+  const closeFilter = () => {
     Animated.parallel([
       Animated.timing(filterAnim, {
         toValue: 300,
@@ -347,12 +346,20 @@ const AdminProduct = () => {
       </View>
       {/* action button */}
       <View style={styles.actionButtons}>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddProduct", { productId: item.id })}>
-          <Text style={styles.actionTextButton}>Sửa</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#ff3737" }]} onPress={() => handleDelete(item.id)}>
-          <Text style={styles.actionTextButton}>Xóa</Text>
-        </TouchableOpacity>
+        <View style={styles.actionRow}>
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddProduct", { productId: item.id })}>
+            <Text style={styles.actionTextButton}>Sửa</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#ff3737" }]} onPress={() => handleDelete(item.id)}>
+            <Text style={styles.actionTextButton}>Xóa</Text>
+          </TouchableOpacity>
+        </View>
+
+        <AppStatusSwitch
+          value={item.status === "available"}
+          onToggle={() => handleToggleStatus(item.id)}
+          style={styles.swithButton}
+        />
       </View>
     </TouchableOpacity>
   )
@@ -363,9 +370,7 @@ const AdminProduct = () => {
   return (
     <>
       <View style={styles.container}>
-        <AdminHeader
-          title='Quản lý sản phẩm'
-        />
+        <Text style={styles.headerTitle}>Quản lý sản phẩm</Text>
 
         <View style={styles.boxSearch}>
           <View style={styles.searchInputWrapper}>
@@ -384,7 +389,7 @@ const AdminProduct = () => {
           <TouchableOpacity onPress={applySearchFilter} style={styles.searchButton}>
             <Icon name='search' size={16} color="#909090"/>
           </TouchableOpacity>
-          <TouchableOpacity onPress={openMenuFilter} style={styles.filterButton}>
+          <TouchableOpacity onPress={openFilter} style={styles.filterButton}>
             <Icon name='filter' size={16} color="#909090"/>
           </TouchableOpacity>
         </View>
@@ -445,7 +450,7 @@ const AdminProduct = () => {
           {/* MENU FILTER */}
           {/* OVERLAY */}
           <Animated.View style={[ styles.overlayFilter, { opacity: filterFade }]} pointerEvents={filterOpen ? "auto" : "none"}>
-            <TouchableOpacity style={{ flex: 1, }} activeOpacity={1} onPress={closeMenuFilter} />
+            <TouchableOpacity style={{ flex: 1, }} activeOpacity={1} onPress={closeFilter} />
           </Animated.View>
           
           {/* --- MENU TRƯỢT TỪ PHẢI SANG --- */}
@@ -460,18 +465,18 @@ const AdminProduct = () => {
           >
             <Text style={styles.filterTitle}>Lọc</Text>
             {/* filter theo category */}
-            <Text style={styles.filterOptionTitle}>Lọc theo danh mục</Text>
-            <View style={styles.filterCategoryList}>
+            <Text style={styles.filterOptionTitle}>Danh mục</Text>
+            <View style={styles.filterOptions}>
               <TouchableOpacity
                 style={[
-                  styles.filterCategoryItem,
-                  selectedCategory === null && styles.filterCategoryActive
+                  styles.filterOption,
+                  selectedCategory === null && styles.filterActive
                 ]}
                 onPress={() => setSelectedCategory(null)}
               >
                 <Text
                   style={[
-                    styles.filterCategoryText,
+                    styles.filterTextOption,
                     selectedCategory === null && { color: "#fff", fontWeight: "bold" }
                   ]}
                 >
@@ -483,14 +488,14 @@ const AdminProduct = () => {
                   <TouchableOpacity
                     key={cate.id}
                     style={[
-                      styles.filterCategoryItem,
-                      selectedCategory === cate.id && styles.filterCategoryActive
+                      styles.filterOption,
+                      selectedCategory === cate.id && styles.filterActive
                     ]}
                     onPress={() => setSelectedCategory(cate.id)}
                   >
                     <Text
                       style={[
-                        styles.filterCategoryText,
+                        styles.filterTextOption,
                         selectedCategory === cate.id && { color: "#fff", fontWeight: "bold" }
                       ]}
                     >
@@ -501,8 +506,8 @@ const AdminProduct = () => {
             </View>
 
             {/* filter theo vùng giá */}
-            <Text style={styles.filterOptionTitle}>Lọc theo giá</Text>
-            <View style={styles.filterPrice}>
+            <Text style={styles.filterOptionTitle}>Khoảng giá</Text>
+            <View style={styles.filterOptions}>
               <View style={styles.filterPriceItem}>
                 <Text style={styles.filterPriceLabel}>Từ:</Text>
                 <TextInput
@@ -529,19 +534,19 @@ const AdminProduct = () => {
               </View>
             </View>
 
-            <View style={styles.filterPriceRange}>
+            <View style={styles.filterOptions}>
                 {PRICE_RANGE.map((item, index) => (
                   <TouchableOpacity
                     key={item.id}
                     style={[
-                      styles.filterPriceRangeItem,
-                      selectedPriceRange === index && styles.filterPriceRangeActive
+                      styles.filterOption,
+                      selectedPriceRange === index && styles.filterActive
                     ]}
                     onPress={() => handleSelectedPriceRange(index)}
                   >
                     <Text
                       style={[
-                        styles.filterPriceRangeText,
+                        styles.filterTextOption,
                         selectedPriceRange === index && { color: "#fff", fontWeight: "bold" }
                       ]}
                     >
@@ -553,9 +558,9 @@ const AdminProduct = () => {
 
             <View style={styles.filterActionButtons}>
               <TouchableOpacity style={[styles.filterActionButton, { backgroundColor: "#909090" }]} onPress={handleResetFilter}>
-                <Text style={styles.filterActionTextButton}>Huỷ</Text>
+                <Text style={styles.filterActionTextButton}>Bỏ lọc</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.filterActionButton, { backgroundColor: "#FCB35E" }]} onPress={() => {applySearchFilter(); closeMenuFilter();}}>
+              <TouchableOpacity style={[styles.filterActionButton, { backgroundColor: "#FCB35E" }]} onPress={() => {applySearchFilter(); closeFilter();}}>
                 <Text style={styles.filterActionTextButton}>Áp dụng</Text>
               </TouchableOpacity>
             </View>
@@ -574,6 +579,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     flexGrow: 1,
     backgroundColor: "#e1f3f8",
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#1ABDBE",
+    marginBottom: 20,
+    textAlign: "center",
   },
 
   // input tìm kiếm
@@ -708,31 +720,26 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginLeft: 10,
   },
-  filterCategoryList: {
+  filterOptions: {
     padding: 10,
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
   },
-  filterCategoryItem: {
+  filterOption: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 5,
     borderWidth: 1,
     borderColor: "#909090",
   },
-  filterCategoryActive: {
+  filterActive: {
     backgroundColor: "#1ABDBE",
     borderColor: "#1ABDBE",
   },
-  filterCategoryText: {
+  filterTextOption: {
     fontSize: 16,
     color: "#333",
-  },
-  filterPrice: {
-    padding: 10,
-    flexDirection: "row",
-    gap: 8,
   },
   filterPriceItem: {
     width: '48%',
@@ -749,27 +756,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#909090",
     fontSize: 16,
-  },
-  filterPriceRange: {
-    padding: 10,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  filterPriceRangeItem: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderRadius: 5,
-    borderColor: "#909090",
-  },
-  filterPriceRangeActive: {
-    backgroundColor: "#1ABDBE",
-    borderColor: "#1ABDBE",
-  },
-  filterPriceRangeText: {
-    fontSize: 16,
-    color: "#333",
   },
   filterActionButtons: {
     marginTop: 16,
@@ -821,17 +807,19 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     fontSize: 16,
   },
+  // hình ảnh
   imageWrapper: {
-    flex: 1,
+    width: 60,
     justifyContent: "center",
   },
   image: {
     width: 50,
     height: 50,
   },
+  // thông tin
   content: {
-    flex: 3,
-    paddingLeft: 10,
+    flex: 1,
+    paddingHorizontal: 10,
     justifyContent: "center",
   },
   nameProductWrapper: {
@@ -840,6 +828,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 10,
+    alignSelf: "flex-start",
   },
   nameProduct: {
     fontSize: 18,
@@ -869,12 +858,16 @@ const styles = StyleSheet.create({
     color: "#ff5500",
     fontWeight: "bold",
   },
+  // nút sửa + xóa + switch
   actionButtons: {
-    flex: 1.6,
-    flexDirection: "row",
+    width: 70,
     alignItems: "center",
-    justifyContent: "flex-end",
-    gap: 6,
+    justifyContent: "center",
+    gap: 8,
+  },
+  actionRow: {
+    flexDirection: "row",
+    gap: 8,
   },
   actionButton: {
     padding: 5,
@@ -887,7 +880,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   swithButton: {
-    width: '100%',
-    padding: 5,
+    
   },
 })

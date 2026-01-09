@@ -55,6 +55,7 @@ class Table(models.Model):
         ('occupied', 'Occupied'),
         ('reserved', 'Reserved'),
     ), default='available')
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -79,19 +80,31 @@ class Reservation(models.Model):
 
     def __str__(self):
         return f"Reservation for {self.customer_name} at {self.reservation_time}"
+# CART MODEL
+class Cart(models.Model):
+    table = models.OneToOneField(Table, related_name='cart', on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=(
+        ('active', 'Active'),
+        ('locked', 'Locked'),
+    ), default='active')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Cart for Table {self.table.number}"
 
 # CARTITEM MODEL
 class CartItem(models.Model):
-    table = models.ForeignKey(Table, related_name='cart_items', on_delete=models.CASCADE)
+    cart = models.ForeignKey(Cart, related_name='cart_items', on_delete=models.CASCADE)
     product = models.ForeignKey(Product, related_name='cart_items', on_delete=models.CASCADE)
     quantity = models.IntegerField()
-    description = models.TextField(blank=True, null=True)
+    note = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"CartItem for {self.product.name}"
-
+    
 # ORDER MODEL
 class Order(models.Model):
     table = models.ForeignKey(Table, related_name='orders', on_delete=models.CASCADE)
@@ -106,6 +119,7 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return f"Order {self.id} for Table {self.table.number}"
+    
 # ORDERITEM MODEL
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='order_items', on_delete=models.CASCADE)
@@ -116,7 +130,7 @@ class OrderItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     class Meta:
-        unique_together = ('order', 'product', 'description')
+        unique_together = ('order', 'product')
     def __str__(self):
         return f"OrderItem for {self.product.name} in Order {self.order.id}"
 # Image MODEL
@@ -154,8 +168,8 @@ class Invoice(models.Model):
         ("unpaid", "Unpaid"),
         ("partially_paid", "Partially Paid"),
         ("canceled", "Canceled"),
-    ),default="paid"),
-    invoice_date = models.DateTimeField(auto_now_add=True),
+    ),default="paid")
+    invoice_date = models.DateTimeField(auto_now_add=True)
     invoice_number = models.CharField(max_length=100,blank=True,null=True,unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

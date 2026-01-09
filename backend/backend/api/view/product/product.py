@@ -33,7 +33,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     
     # (thêm)
     def list(self, request, *args, **kwargs):
-        queryset = Product.objects.all()
+        queryset = self.get_queryset()
         
         #search
         search = request.query_params.get('search')
@@ -50,28 +50,30 @@ class ProductViewSet(viewsets.ModelViewSet):
             
         # filter status
         status_value = request.query_params.get('status')
-        if status_value:
+        if status_value in ['available', 'unavailable']:
             queryset = queryset.filter(status=status_value)
             
         # filter price range
         min_price = request.query_params.get('min_price')
         max_price = request.query_params.get('max_price')
         
-        if min_price:
-            queryset = queryset.filter(price__gte=min_price)
-            
-        if max_price:
-            queryset = queryset.filter(price__lte=max_price)
+        try:
+            if min_price is not None:
+                queryset = queryset.filter(price__gte=min_price)
+            if max_price is not None:
+                queryset = queryset.filter(price__lte=max_price)
+        except ValueError:
+            pass  # bỏ qua nếu giá không hợp lệ
             
         # sort
         sort = request.query_params.get('sort')
         if sort == 'newest':
             queryset = queryset.order_by('-created_at')
             
-        if sort == 'price_asc':
+        elif sort == 'price_asc':
             queryset = queryset.order_by('price')
-            
-        if sort == 'price_desc':
+
+        elif sort == 'price_desc':
             queryset = queryset.order_by('-price')
             
         serializer = self.get_serializer(queryset, many=True)

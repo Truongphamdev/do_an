@@ -1,5 +1,5 @@
 import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createNativeStackNavigator, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AdminTabBottom from "./adminTabBottom";
 import AdminCategory from "../screens/admin/adminCategory";
 
@@ -24,7 +24,9 @@ export type AdminStackParamList = {
     UserDetail: { userId?: number };
 }
 
-const Stack = createNativeStackNavigator();
+export type AdminNav = NativeStackNavigationProp<AdminStackParamList>;
+
+const Stack = createNativeStackNavigator<AdminStackParamList>();
 
 export const AdminStackNavigation = () => {
     return (
