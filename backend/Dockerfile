@@ -4,7 +4,8 @@ FROM python:3.11-slim
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONPATH=/app/backend
 
 # Set work directory
 WORKDIR /app
@@ -24,10 +25,6 @@ RUN pip install --upgrade pip && \
 # Copy project
 COPY backend/ .
 
-# Copy entrypoint script
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-
 # Create staticfiles directory
 RUN mkdir -p /app/staticfiles /app/media
 
@@ -45,5 +42,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/api/', timeout=2)"
 
-# Run gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "backend.wsgi:application"]
+# Run migrations and start Daphne
+CMD ["/bin/bash", "-c", "sleep 10 && python manage.py migrate --noinput && daphne -b 0.0.0.0 -p 8000 backend.asgi:application"]

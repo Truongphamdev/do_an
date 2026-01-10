@@ -1,6 +1,5 @@
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native'
 import React, { useEffect, useState, useCallback } from 'react'
-import { FlatList } from 'react-native-gesture-handler'
 // navigation
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { AdminNav } from '../../navigation/adminStackNavigation'
@@ -78,24 +77,30 @@ const AdminCategory = () => {
 
     return (
         <>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
-                <Icon name='arrow-left' style={styles.iconGoBack}/>
-            </TouchableOpacity>
+            
 
             <View style={styles.container}>
-                <Text style={styles.titleHeader}>Quản lý danh mục</Text>
-
-                <View style={{ padding: 5 }}>
-                    <TouchableOpacity onPress={() => navigation.navigate('AdminAddCategory', {})} style={styles.addCategoryButton}>
-                        <Icon name='plus' size={16} color="#1ABDBE"/>
-                    </TouchableOpacity>
-                </View>
-
                 <FlatList
                     data={categories}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id.toString()}
-                    style={{ padding: 5 }}
+                    contentContainerStyle={{ paddingBottom: 50, padding: 16 }}
+                    showsVerticalScrollIndicator={false}
+                    ListHeaderComponent={
+                        <>
+                            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
+                                <Icon name='arrow-left' style={styles.iconGoBack}/>
+                            </TouchableOpacity>
+
+                            <Text style={styles.titleHeader}>Quản lý danh mục</Text>
+
+                            <View>
+                                <TouchableOpacity onPress={() => navigation.navigate('AdminAddCategory', {})} style={styles.addCategoryButton}>
+                                    <Icon name='plus' size={16} color="#1ABDBE"/>
+                                </TouchableOpacity>
+                            </View>
+                        </>
+                    }
                 />
             </View>
         </>
@@ -106,8 +111,7 @@ export default AdminCategory
 
 const styles = StyleSheet.create({
     container: {
-        padding: 16,
-        flexGrow: 1,
+        flex: 1,
         backgroundColor: "#e1f3f8",
     },
     titleHeader: {
@@ -118,8 +122,8 @@ const styles = StyleSheet.create({
     },
     goBackButton: {
         position: "absolute",
-        left: 20,
-        top: 20,
+        left: 5,
+        top: 5,
         height: 50,
         width: 50,
         zIndex: 999,

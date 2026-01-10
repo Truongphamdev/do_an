@@ -370,36 +370,41 @@ const AdminProduct = () => {
   return (
     <>
       <View style={styles.container}>
-        <Text style={styles.headerTitle}>Quản lý sản phẩm</Text>
-
-        <View style={styles.boxSearch}>
-          <View style={styles.searchInputWrapper}>
-            <TextInput
-              value={searchText}
-              onChangeText={(text) => setSearchText(text)}
-              placeholder='Tìm kiếm'
-              style={styles.searchInput}
-            />
-            {searchText.length > 0 && (
-              <TouchableOpacity onPress={handleClearSearch} style={styles.clearSearchButton}>
-                <Icon name='times-circle' size={16} color="#909090" />
-              </TouchableOpacity>
-            )}
-          </View>
-          <TouchableOpacity onPress={applySearchFilter} style={styles.searchButton}>
-            <Icon name='search' size={16} color="#909090"/>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={openFilter} style={styles.filterButton}>
-            <Icon name='filter' size={16} color="#909090"/>
-          </TouchableOpacity>
-        </View>
         
         {products.length > 0 ? (
           <FlatList
             data={products}
             renderItem={renderItem}
             keyExtractor={(item) => item.id.toString()}
-            style={{ padding: 5, marginTop: 5, }}
+            contentContainerStyle={{ paddingBottom: 30, padding: 16 }}
+            showsVerticalScrollIndicator={false}
+            ListHeaderComponent={
+              <>
+                <Text style={styles.headerTitle}>Quản lý sản phẩm</Text>
+
+                <View style={styles.boxSearch}>
+                  <View style={styles.searchInputWrapper}>
+                    <TextInput
+                      value={searchText}
+                      onChangeText={(text) => setSearchText(text)}
+                      placeholder='Tìm kiếm'
+                      style={styles.searchInput}
+                    />
+                    {searchText.length > 0 && (
+                      <TouchableOpacity onPress={handleClearSearch} style={styles.clearSearchButton}>
+                        <Icon name='times-circle' size={16} color="#909090" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  <TouchableOpacity onPress={applySearchFilter} style={styles.searchButton}>
+                    <Icon name='search' size={16} color="#909090"/>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={openFilter} style={styles.filterButton}>
+                    <Icon name='filter' size={16} color="#909090"/>
+                  </TouchableOpacity>
+                </View>
+              </>
+            }
           />
         ) : (
           <View style={styles.noProduct}>
@@ -575,9 +580,7 @@ export default AdminProduct
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    flexGrow: 1,
+    flex: 1,
     backgroundColor: "#e1f3f8",
   },
   headerTitle: {
@@ -595,7 +598,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "100%",
     height: 42,
-    paddingHorizontal: 5,
   },
   searchInputWrapper: {
     flex: 3,
@@ -655,7 +657,7 @@ const styles = StyleSheet.create({
     right: 0,
     left: 0,
     backgroundColor: "rgba(235, 229, 229, 0.4)",
-    zIndex: 900,
+    zIndex: 998,
   },
   containerMenuFab: {
     position: "absolute",
@@ -702,7 +704,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     top: 0,
     right: 0,
-    width: 260,
+    width: 300,
     zIndex: 999,
     elevation: 5,
   },

@@ -1,19 +1,17 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15-alpine
     container_name: backend_db
     environment:
-      POSTGRES_DB: ${DB_NAME:-your_db_name}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: do_an
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "11022005@"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,21 +28,15 @@ services:
       retries: 5
 
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: backend_app
-    entrypoint: /app/entrypoint.sh
-    command: gunicorn --bind 0.0.0.0:8000 --workers 4 --timeout 120 backend.wsgi:application
+    command: daphne -b 0.0.0.0 -p 8000 backend.asgi:application
     environment:
-      DEBUG: ${DEBUG:-False}
-      SECRET_KEY: ${SECRET_KEY:-your-secret-key-here}
-      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-your_db_name}
+      DEBUG: "True"
+      DATABASE_URL: postgresql://postgres:11022005@db:5432/do_an
       REDIS_URL: redis://redis:6379/0
     volumes:
       - .:/app
-      - static_volume:/app/staticfiles
-      - media_volume:/app/media
     ports:
       - "8000:8000"
     depends_on:
@@ -53,6 +45,7 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
+
 
   nginx:
     image: nginx:alpine
@@ -65,7 +58,8 @@ services:
       - static_volume:/app/staticfiles:ro
       - media_volume:/app/media:ro
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:

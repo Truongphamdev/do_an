@@ -212,12 +212,19 @@ const AdminStaff = () => {
           </TouchableOpacity>
         </View>
 
-        <FlatList
-          data={users}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
-          style={{ padding: 5, marginTop: 5, }}
-        />
+        {users.length > 0 ? (
+          <FlatList
+            data={users}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id.toString()}
+            style={{ padding: 5, marginTop: 5, }}
+          />
+        ) : (
+          <View style={styles.noUser}>
+            <Icon name='users' size={80} color="#1ABDBE"/>
+            <Text style={styles.textnoUser}>Hiện tại chưa có người dùng. Vui lòng thêm người dùng!</Text>
+          </View>
+        )}
       </View>
 
       {/* FILTER */}
@@ -389,6 +396,19 @@ const styles = StyleSheet.create({
   },
 
   // list user
+  noUser: {
+    flex: 1,
+    width: "100%",
+    marginTop: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  textnoUser: {
+    marginTop: 10,
+    fontSize: 16,
+    textAlign: "center",
+    fontWeight: "bold",
+  },
   card: {
     marginTop: 10,
     flexDirection: "row",
