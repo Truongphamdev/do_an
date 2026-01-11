@@ -179,7 +179,7 @@ const AdminStaff = () => {
       {/* edit + remove */}
       <View style={styles.actionButtons}>
         <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddStaff", { userId: item.id })}>
-          <Text style={styles.actionTextButton}>Sửa</Text>
+          <Icon name="edit" size={16} color="#fff" style={styles.actionIconButton}/>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -188,42 +188,50 @@ const AdminStaff = () => {
   return (
     <>
       <View style={styles.container}>
-        <Text style={styles.headerTitle}>Quản lý người dùng</Text>
-
-        <View style={styles.boxSearch}>
-          <View style={styles.searchInputWrapper}>
-            <TextInput
-              value={searchText}
-              onChangeText={(text) => setSearchText(text)}
-              placeholder='Tìm kiếm'
-              style={styles.searchInput}
-            />
-            {searchText.length > 0 && (
-              <TouchableOpacity onPress={handleClearSearch} style={styles.clearSearchButton}>
-                <Icon name='times-circle' size={16} color="#909090" />
-              </TouchableOpacity>
-            )}
-          </View>
-          <TouchableOpacity onPress={applySearchFilter} style={styles.searchButton}>
-            <Icon name='search' size={16} color="#909090"/>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={openFilter} style={styles.filterButton}>
-            <Icon name='filter' size={16} color="#909090"/>
-          </TouchableOpacity>
-        </View>
 
         {users.length > 0 ? (
           <FlatList
             data={users}
             renderItem={renderItem}
             keyExtractor={(item) => item.id.toString()}
-            style={{ padding: 5, marginTop: 5, }}
+            contentContainerStyle={{ padding: 16, marginBottom: 30}}
+            ListHeaderComponent={
+              <>
+                <Text style={styles.headerTitle}>Quản lý người dùng</Text>
+
+                <View style={styles.boxSearch}>
+                  <View style={styles.searchInputWrapper}>
+                    <TextInput
+                      value={searchText}
+                      onChangeText={(text) => setSearchText(text)}
+                      placeholder='Tìm kiếm'
+                      style={styles.searchInput}
+                    />
+                    {searchText.length > 0 && (
+                      <TouchableOpacity onPress={handleClearSearch} style={styles.clearSearchButton}>
+                        <Icon name='times-circle' size={16} color="#909090" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  <TouchableOpacity onPress={applySearchFilter} style={styles.searchButton}>
+                    <Icon name='search' size={16} color="#909090"/>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={openFilter} style={styles.filterButton}>
+                    <Icon name='filter' size={16} color="#909090"/>
+                  </TouchableOpacity>
+                </View>
+              </>
+            }
           />
         ) : (
-          <View style={styles.noUser}>
-            <Icon name='users' size={80} color="#1ABDBE"/>
-            <Text style={styles.textnoUser}>Hiện tại chưa có người dùng. Vui lòng thêm người dùng!</Text>
-          </View>
+          <>
+            <Text style={styles.headerTitle}>Quản lý người dùng</Text>
+
+            <View style={styles.noUser}>
+              <Icon name='users' size={80} color="#1ABDBE"/>
+              <Text style={styles.textnoUser}>Hiện tại chưa có người dùng. Vui lòng thêm người dùng!</Text>
+            </View>
+          </>
         )}
       </View>
 
@@ -322,8 +330,6 @@ export default AdminStaff
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
     backgroundColor: "#e1f3f8",
   },
   headerTitle: {
@@ -341,7 +347,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "100%",
     height: 42,
-    paddingHorizontal: 5,
   },
   searchInputWrapper: {
     flex: 3,
@@ -476,11 +481,10 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: 3,
   },
-  actionTextButton: {
-    fontSize: 14,
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
+  actionIconButton: {
+    padding: 2,
+    alignItems: "center",
+    justifyContent: "center",
   },
   isActive: {
     alignSelf: "flex-start",
@@ -567,4 +571,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#fff",
   },
+
 })

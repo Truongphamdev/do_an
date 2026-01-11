@@ -1,76 +1,60 @@
 import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native'
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 // navigation
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { AdminNav } from '../../navigation/adminStackNavigation'
 // icon
 import Icon from "react-native-vector-icons/FontAwesome5"
-// api
-import { CategoryApi, type CategoryInterface } from '../../api/category.api'
 // thông báo
 import { useNotify } from '../../providers/notificationProvider'
+// api
+import { TableApi, type TableInterface } from '../../api/table.api'
 
-const AdminCategory = () => {
-    const { success, error, confirm } = useNotify();
+const AdminTable = () => {
     const navigation = useNavigation<AdminNav>();
-    const [ categories, setCategories ] = useState<CategoryInterface[]>([]);
+    const { success, error, confirm } = useNotify();
+    const [ tables, setTables ] = useState<TableInterface[]>([]);
 
-    // Khi khởi động màn hình app thì gọi các hàm trong useEffect
+    // hàm load danh sách bàn
+    const fetchTables = useCallback(async () => {
+        try {
+            const tables = await TableApi.getList();
+            const sorted = [...tables].sort(
+                (a, b) =>
+                    new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
+            );
+
+            setTables(sorted);
+        } catch (err: any) {
+            error("Lấy danh sách bàn thất bại.");
+        }
+    }, []);
+
     useFocusEffect(
         useCallback(() => {
-            fetchCategories();
-        }, [])
+            fetchTables();
+        }, [fetchTables])
     );
 
-    // Hàm chức năng lấy danh sách danh mục
-    const fetchCategories = async () => {
-        try {
-            const categories = await CategoryApi.getAll();
-
-            const sorted = [...categories].sort((a, b) => {
-                const ta = Date.parse(a.created_at ?? "") || 0;
-                const tb = Date.parse(b.created_at ?? "") || 0;
-                return tb - ta;
-            });
-
-            setCategories(sorted);
-        } catch (err) {
-            error("Lấy danh sách danh mục thất bại");
-        }
-    }
-
-    // Hàm chức năng xóa danh mục
-    const handelDelete = async (id: number) => {
-        confirm({
-            title: "Thông báo",
-            message: "Bạn có chắc chắn muốn xóa danh mục này?",
-            onConfirm: async () => {
-                try {
-                    await CategoryApi.remove(id);
-                    success("Xóa danh mục thành công!");
-                } catch (err) {
-                    error("Xóa danh mục thất bại!");
-                }
-            },
-        })
-    }
-
-    // Render item danh sách danh mục
-    const renderItem = ({ item, index }: { item: CategoryInterface, index: number }) => (
+    const renderItem = ({index, item}: { index: number, item: TableInterface}) => (
         <TouchableOpacity
-            style={styles.itemCategory}
-            onPress={() => navigation.navigate("CategoryDetail", { categoryId: item.id })}
+            style={styles.card}
+            onPress={() => navigation.navigate("TableDetail", { tableId: item.id })}
             activeOpacity={0.7}
         >
             <Text style={styles.serialNumber}>{index + 1}</Text>
-            <Text style={styles.name}>{item.name}</Text>
+            {/* Thông tin */}
+            <View style={styles.content}>
+                <Text style={styles.number}>Bàn số: {item.number}</Text>
+                <Text style={styles.capacity}>Sức chứa của bàn: {item.capacity}</Text>
+            </View>
             <View style={styles.actionButtons}>
-                <TouchableOpacity onPress={() => navigation.navigate("AdminAddCategory", { categoryId: item.id })} style={[styles.actionButton, { backgroundColor: "#3a9bfb"}]}>
+                <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddTable", { tableId: item.id })}>
                     <Icon name="edit" size={16} color="#fff" style={styles.actionIconButton}/>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handelDelete(item.id)} style={[styles.actionButton, { backgroundColor: "#ff3737"}]}>
+                {/* <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#ff3737" }]} onPress={() => {}}>
                     <Icon name="trash" size={16} color="#fff" style={styles.actionIconButton}/>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
         </TouchableOpacity>
     )
@@ -79,31 +63,30 @@ const AdminCategory = () => {
         <>
             <View style={styles.container}>
                 <FlatList
-                    data={categories}
+                    data={tables}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id.toString()}
-                    contentContainerStyle={{ paddingBottom: 100, padding: 16 }}
-                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: 100, padding: 16, }}
                     ListHeaderComponent={
                         <>
                             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
                                 <Icon name='arrow-left' style={styles.iconGoBack}/>
                             </TouchableOpacity>
 
-                            <Text style={styles.titleHeader}>Quản lý danh mục</Text>
+                            <Text style={styles.titleHeader}>Quản lý bàn</Text>
                         </>
                     }
                 />
             </View>
 
-            <TouchableOpacity onPress={() => navigation.navigate('AdminAddCategory', {})} style={styles.addCategoryButton}>
+            <TouchableOpacity onPress={() => navigation.navigate('AdminAddTable', {})} style={styles.addTableButton}>
                 <Icon name='plus' size={16} color="#fff"/>
             </TouchableOpacity>
         </>
     )
 }
 
-export default AdminCategory
+export default AdminTable
 
 const styles = StyleSheet.create({
     container: {
@@ -130,7 +113,7 @@ const styles = StyleSheet.create({
     },
 
     // Nút thêm danh mục
-    addCategoryButton: {
+    addTableButton: {
         position: "absolute",
         bottom: 40,
         right: 20,
@@ -144,31 +127,29 @@ const styles = StyleSheet.create({
         elevation: 3,
         marginTop: 20,
     },
-    
 
-    // Danh sách danh mục
-    itemCategory: {
+    card:{
+        marginTop: 10,
         flexDirection: "row",
         alignItems: "center",
-        width: "100%",
-        marginTop: 10,
+        paddingVertical: 15,
+        paddingHorizontal: 10,
         backgroundColor: "#fff",
         borderRadius: 5,
-        padding: 5,
-        elevation: 3,
+        elevation: 5,
     },
     serialNumber: {
-        flex: 0.5,
+        width: 28,
+        paddingVertical: 5,
         fontSize: 16,
-        padding: 5,
     },
-    name: {
-        flex: 3,
-        fontSize: 16,
-        padding: 5,
+    content: {
+        flex: 1,
+        paddingHorizontal: 10,
+        justifyContent: "center",
     },
     actionButtons: {
-        flex: 1,
+        width: 70,
         flexDirection: "row",
         justifyContent: "center",
         gap: 10,
@@ -182,5 +163,14 @@ const styles = StyleSheet.create({
         padding: 2,
         alignItems: "center",
         justifyContent: "center",
+    },
+    number: {
+        fontSize: 18,
+        fontWeight: "bold",
+        color: "#333",
+    },
+    capacity: {
+        color: "#707070",
+        fontSize: 14,
     },
 })

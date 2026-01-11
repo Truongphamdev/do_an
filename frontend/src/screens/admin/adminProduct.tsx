@@ -348,17 +348,16 @@ const AdminProduct = () => {
       <View style={styles.actionButtons}>
         <View style={styles.actionRow}>
           <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddProduct", { productId: item.id })}>
-            <Text style={styles.actionTextButton}>Sửa</Text>
+            <Icon name="edit" size={16} color="#fff" style={styles.actionIconButton}/>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#ff3737" }]} onPress={() => handleDelete(item.id)}>
-            <Text style={styles.actionTextButton}>Xóa</Text>
+            <Icon name="trash" size={16} color="#fff" style={styles.actionIconButton}/>
           </TouchableOpacity>
         </View>
 
         <AppStatusSwitch
           value={item.status === "available"}
           onToggle={() => handleToggleStatus(item.id)}
-          style={styles.swithButton}
         />
       </View>
     </TouchableOpacity>
@@ -407,10 +406,14 @@ const AdminProduct = () => {
             }
           />
         ) : (
-          <View style={styles.noProduct}>
-            <Icon name='utensils' size={80} color="#1ABDBE"/>
-            <Text style={styles.textNoProduct}>Hiện tại chưa có sản phẩm. Vui lòng thêm sản phẩm!</Text>
-          </View>
+          <>
+            <Text style={styles.headerTitle}>Quản lý sản phẩm</Text>
+
+            <View style={styles.noProduct}>
+              <Icon name='utensils' size={80} color="#1ABDBE"/>
+              <Text style={styles.textNoProduct}>Hiện tại chưa có sản phẩm. Vui lòng thêm sản phẩm!</Text>
+            </View>
+          </>
         )}
 
       </View>
@@ -435,16 +438,25 @@ const AdminProduct = () => {
               transform: [{ translateY: fabAnim }],
             }}
         >
+          {/* Thêm sản phẩm */}
           <View style={styles.itemFab}>
             <Text style={styles.itemFabLabel}>Thêm sản phẩm</Text>
             <TouchableOpacity style={[styles.itemFabButton, { backgroundColor: "#ffb92d" }]} onPress={() => { closeMenuFab(); navigation.navigate('AdminAddProduct', {}) }}>
               <Icon name='utensils' size={24} color="#fff" />
             </TouchableOpacity>
           </View>
+          {/* Quản lý danh mục */}
           <View style={styles.itemFab}>
             <Text style={styles.itemFabLabel}>Quản lý danh mục</Text>
             <TouchableOpacity style={[styles.itemFabButton, { backgroundColor: "#0080FF" }]} onPress={() => { closeMenuFab(); navigation.navigate('AdminCategory') }}>
               <Icon name='th-large' size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          {/* Quản lý bàn */}
+          <View style={styles.itemFab}>
+            <Text style={styles.itemFabLabel}>Quản lý bàn</Text>
+            <TouchableOpacity style={[styles.itemFabButton, { backgroundColor: "#66CC00" }]} onPress={() => { closeMenuFab(); navigation.navigate('AdminTable') }}>
+              <Icon name='chair' size={24} color="#fff" />
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -875,13 +887,9 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: 3,
   },
-  actionTextButton: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#fff",
-    textAlign: "center",
-  },
-  swithButton: {
-    
+  actionIconButton: {
+    padding: 2,
+    alignItems: "center",
+    justifyContent: "center",
   },
 })
