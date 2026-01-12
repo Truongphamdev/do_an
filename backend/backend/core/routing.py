@@ -4,4 +4,5 @@ from . import consumers
 websocket_urlpatterns = [
     path('ws/products/', consumers.ProductConsumer.as_asgi()),
     path('ws/images/', consumers.ImageConsumer.as_asgi()),
+    path('ws/tables/', consumers.TableConsumer.as_asgi()),
 ]

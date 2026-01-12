@@ -68,16 +68,15 @@ const UserDetail = () => {
         setLoading(true);
         try {
           if (user.is_active) {
-            await UserApi.disableUser(user.id);
+            await UserApi.disable(id);
           } else {
-            await UserApi.enableUser(user.id);
+            await UserApi.enable(id);
           }
 
           setUser(prev => prev ? { ...prev, is_active: newStatus} : prev);
 
           success("Cập nhật trạng thái thành công!");
         } catch (err: any) {
-          setUser({ ...user, is_active: !newStatus});
           error("Cập nhật thất bại!");
         } finally {
           setLoading(false);
@@ -101,7 +100,7 @@ const UserDetail = () => {
 
     setLoading(true);
     try {
-      await UserApi.changeRole(user.id, newRole);
+      await UserApi.changeRole(id, newRole);
       success("Đổi vai trò thành công!");
     } catch (err: any) {
       setUser({ ...user, role: oldRole});
@@ -171,7 +170,7 @@ const UserDetail = () => {
               </View>
               <AppStatusSwitch
                 value={user.is_active}
-                onToggle={() => {handleToggleSwitch(user.id)}}
+                onToggle={() => handleToggleSwitch(user.id)}
               />
             </View>
 

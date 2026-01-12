@@ -156,15 +156,8 @@ const AdminStaff = () => {
             {item.first_name} {item.last_name}
           </Text>
 
-          <View
-            style={[
-              styles.statusBadge,
-              { backgroundColor: item.is_active ? "#34d418" : "#FCB35E" }
-            ]}
-          >
-            <Text style={styles.statusText}>
-              {item.is_active ? "Hoạt động" : "Đã khóa"}
-            </Text>
+          <View style={[styles.statusBadge, { backgroundColor: item.is_active ? "#34d418" : "#FCB35E" } ]} >
+            <Text style={styles.statusText}>{item.is_active ? "Hoạt động" : "Đã khóa"}</Text>
           </View>
         </View>
         {/* username + email */}

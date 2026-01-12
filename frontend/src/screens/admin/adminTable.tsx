@@ -9,11 +9,15 @@ import Icon from "react-native-vector-icons/FontAwesome5"
 import { useNotify } from '../../providers/notificationProvider'
 // api
 import { TableApi, type TableInterface } from '../../api/table.api'
+// component
+import { AppStatusSwitch, AppLoadingOverlay } from '../../components'
 
 const AdminTable = () => {
     const navigation = useNavigation<AdminNav>();
     const { success, error, confirm } = useNotify();
     const [ tables, setTables ] = useState<TableInterface[]>([]);
+
+    const [ loading, setLoading ] = useState(false);
 
     // hàm load danh sách bàn
     const fetchTables = useCallback(async () => {
@@ -36,6 +40,38 @@ const AdminTable = () => {
         }, [fetchTables])
     );
 
+    // hàm bật/tắt hoạt động của bạn
+      const handleToggleSwitch = async (id: number, currentStatus: boolean) => {
+        const newStatus = !currentStatus;
+
+        confirm({
+            title: "Xác nhận",
+            message: `Bạn có muốn ${newStatus ? "bật" : "tắt"} hoạt động của bàn này không?`,
+            onConfirm: async () => {
+                setLoading(true);
+                try {
+                    if (newStatus) {
+                        await TableApi.enable(id);
+                    } else {
+                        await TableApi.disable(id);
+                    }
+                    setTables(prev =>
+                        prev.map(table =>
+                            table.id === id
+                            ? {...table, is_active: newStatus}
+                            : table
+                        )
+                    );
+                    success("Cập nhật thành công.");
+                } catch (err: any) {
+                    error("Cập nhật thất bại!");
+                } finally {
+                    setLoading(false);
+                }
+            }
+        })
+      }
+
     const renderItem = ({index, item}: { index: number, item: TableInterface}) => (
         <TouchableOpacity
             style={styles.card}
@@ -45,16 +81,27 @@ const AdminTable = () => {
             <Text style={styles.serialNumber}>{index + 1}</Text>
             {/* Thông tin */}
             <View style={styles.content}>
-                <Text style={styles.number}>Bàn số: {item.number}</Text>
+                <View style={styles.numberWrapper}>
+                    <Text style={styles.number}>Bàn số: {item.number}</Text>
+                    <View  style={[styles.statusBadge, { backgroundColor: item.is_active ? "#34d418" : "#FCB35E" }]}>
+                        <Text style={styles.statusText}>{item.is_active ? "Hoạt động" : "Đã khóa"}</Text>
+                    </View>
+                </View>
                 <Text style={styles.capacity}>Sức chứa của bàn: {item.capacity}</Text>
             </View>
             <View style={styles.actionButtons}>
-                <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddTable", { tableId: item.id })}>
-                    <Icon name="edit" size={16} color="#fff" style={styles.actionIconButton}/>
-                </TouchableOpacity>
-                {/* <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#ff3737" }]} onPress={() => {}}>
-                    <Icon name="trash" size={16} color="#fff" style={styles.actionIconButton}/>
-                </TouchableOpacity> */}
+                <View>
+                    <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddTable", { tableId: item.id })}>
+                        <Icon name="edit" size={16} color="#fff" style={styles.actionIconButton}/>
+                    </TouchableOpacity>
+                    {/* <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#ff3737" }]} onPress={() => {}}>
+                        <Icon name="trash" size={16} color="#fff" style={styles.actionIconButton}/>
+                    </TouchableOpacity> */}
+                </View>
+                <AppStatusSwitch
+                    value={!!item.is_active}
+                    onToggle={() => handleToggleSwitch(item.id, !!item.is_active)}
+                />
             </View>
         </TouchableOpacity>
     )
@@ -82,6 +129,11 @@ const AdminTable = () => {
             <TouchableOpacity onPress={() => navigation.navigate('AdminAddTable', {})} style={styles.addTableButton}>
                 <Icon name='plus' size={16} color="#fff"/>
             </TouchableOpacity>
+
+            <AppLoadingOverlay
+                visible={loading}
+                title='Đang tải...'
+            />
         </>
     )
 }
@@ -149,11 +201,12 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     actionButtons: {
-        width: 70,
+        width: 80,
         flexDirection: "row",
+        alignItems: "center",
         justifyContent: "center",
-        gap: 10,
         padding: 5,
+        gap: 10,
     },
     actionButton: {
         padding: 5,
@@ -172,5 +225,27 @@ const styles = StyleSheet.create({
     capacity: {
         color: "#707070",
         fontSize: 14,
+    },
+    numberWrapper: {
+        position: "relative",
+        backgroundColor: "#eef7ff",
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 10,
+        alignSelf: "flex-start",
+    },
+    statusBadge: {
+        position: "absolute",
+        top: -8,
+        right: -60,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 10,
+        elevation: 3,
+    },
+    statusText: {
+        fontSize: 12,
+        color: "#fff",
+        fontWeight: "bold",
     },
 })

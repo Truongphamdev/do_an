@@ -35,11 +35,11 @@ export const UserApi = {
         return data;
     },
 
-    enableUser: async (id: number) => {
+    enable: async (id: number) => {
         return api.patch(`admin/users/${id}/enable/`);
     },
 
-    disableUser: async (id: number) => {
+    disable: async (id: number) => {
         return api.patch(`admin/users/${id}/disable/`);
     },
 

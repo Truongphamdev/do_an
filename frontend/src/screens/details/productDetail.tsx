@@ -103,15 +103,23 @@ const ProductDetail = () => {
 
   // hàm thay đổi trạng thái
   const handleStatusUpdate = async (id: number) => {
-    try {
-      if(!product?.status) return;
+    if(!product?.status) return;
 
-      const newStatus = product.status === "available" ? "unavailable" : "available";
-      await ProductApi.updateStatus(id, newStatus);
-      loadProductById(product.id);
-    } catch (err: any) {
-      error("Cập nhật trạng thái sản phẩm thất bại!");
-    }
+    const newStatus = product.status === "available" ? "unavailable" : "available";
+    confirm({
+      title: "Xác nhận",
+      message: `Bạn muốn ${newStatus === "available" ? "bật" : "tắt"} sản phẩm này?`,
+      onConfirm: async () => {
+        try {
+          await ProductApi.updateStatus(id, newStatus);
+          
+          setProduct(prev => prev ? {...prev, status: newStatus} : prev )
+          success("Cập nhật thành công!");
+        } catch (err: any) {
+          error("Cập nhật trạng thái sản phẩm thất bại!");
+        }
+      }
+    })
   }
 
   // hàm render images

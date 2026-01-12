@@ -11,6 +11,8 @@ import { TableApi, type TableInterface } from '../../api/table.api'
 import { useNotify } from '../../providers/notificationProvider'
 // utils
 import { formatDateTime } from '../../utils/date'
+// component
+import { AppLoadingOverlay, AppStatusSwitch } from '../../components'
 
 type AdminTableDetailRoute = RouteProp<AdminStackParamList, "TableDetail">;
 
@@ -20,6 +22,7 @@ const TableDetail = () => {
   const tableId = route.params?.tableId;
 
   const { success, error, confirm } = useNotify();
+  const [ loading, setLoading ] = useState(false);
   const [table, setTable] = useState<TableInterface | null>(null);
 
   const loadTableById = async (id: number) => {
@@ -68,6 +71,34 @@ const TableDetail = () => {
     }
   };
 
+  // hàm bật/tắt hoạt động của bạn
+  const handleToggleSwitch = async (id: number) => {
+    if (!table) return;
+
+    const newStatus = !table.is_active;
+
+    confirm({
+      title: "Xác nhận",
+      message: `Bạn có muốn ${newStatus ? "bật" : "tắt"} hoạt động của bàn này không?`,
+      onConfirm: async () => {
+        setLoading(true);
+        try {
+          if (table.is_active) {
+            await TableApi.disable(id);
+          } else {
+            await TableApi.enable(id);
+          }
+          setTable(prev => prev ? {...prev, is_active: newStatus} : prev);
+          success("Cập nhật thành công.");
+        } catch (err: any) {
+          error("Cập nhật thất bại!");
+        } finally {
+          setLoading(false);
+        }
+      }
+    })
+  }
+
   return (
     <>
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
@@ -99,11 +130,17 @@ const TableDetail = () => {
               <Text style={styles.value}>{renderStatus(table.status)}</Text>
             </View>
 
-            <View style={styles.item}>
-              <Text style={styles.label}>* Hoạt động:</Text>
-              <Text style={styles.value}>
-                {table.is_active ? "Đang hoạt động" : "Ngừng hoạt động"}
-              </Text>
+            <View style={[styles.item, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
+              <View>
+                <Text style={styles.label}>* Hoạt động:</Text>
+                <Text style={styles.value}>
+                  {table.is_active ? "Đang hoạt động" : "Ngừng hoạt động"}
+                </Text>
+              </View>
+              <AppStatusSwitch
+                value={!!table?.is_active}
+                onToggle={() => handleToggleSwitch(table.id)}
+              />
             </View>
 
             {table.created_at && (
@@ -145,6 +182,11 @@ const TableDetail = () => {
           </View>
         )}
       </View>
+
+      <AppLoadingOverlay
+        visible={loading}
+        title='Đang tải...'
+      />
     </>
   );
 };

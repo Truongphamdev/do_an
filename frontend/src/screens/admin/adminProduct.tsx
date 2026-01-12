@@ -164,16 +164,32 @@ const AdminProduct = () => {
 
   // Chức năng cập nhật trạng thái sản phẩm
   const handleToggleStatus = async (id: number) => {
-    try {
-      const product = products.find(prev => prev.id === id);
-      if (!product) return;
+    const product = products.find(prev => prev.id === id);
+    if (!product) return;
 
-      const newStatus = product.status === "available" ? "unavailable" : "available";
+    const newStatus = product.status === "available" ? "unavailable" : "available";
 
-      await ProductApi.updateStatus(id, newStatus);
-    } catch (err: any) {
-      error("Cập nhật trạng thái sản phẩm thất bại!");
-    }
+    confirm({
+      title: "Xác nhận",
+      message: `Bạn muốn ${newStatus === "available" ? "bật" : "tắt"} sản phẩm này?`,
+      onConfirm: async () => {
+        try {
+          await ProductApi.updateStatus(id, newStatus);
+
+          setProducts(prev =>
+            prev.map(product =>
+              product.id === id
+              ? {...product, status: newStatus}
+              : product
+            )
+          );
+
+          success("Cập nhật thành công!");
+        } catch (err: any) {
+          error("Cập nhật trạng thái sản phẩm thất bại!");
+        }
+      }
+    })
   }
   // Mảng khoảng giá
   const PRICE_RANGE = [

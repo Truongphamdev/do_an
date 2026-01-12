@@ -127,7 +127,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ('id', 'name', 'description', 'image', 'image_url', 'price', 'category', 'category_name', 'created_at', 'updated_at', 'status')
+        fields = ('id', 'name', 'description', 'image', 'image_url', 'price', 'category', 'category_name', 'created_at', 'updated_at', 'status', 'is_menu_active')
         read_only_fields = ('id', 'created_at', 'updated_at')
     # ------
     def get_image_url(self, obj):
