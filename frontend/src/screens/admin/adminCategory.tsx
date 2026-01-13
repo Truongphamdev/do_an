@@ -1,6 +1,5 @@
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native'
 import React, { useEffect, useState, useCallback } from 'react'
-import { FlatList } from 'react-native-gesture-handler'
 // navigation
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { AdminNav } from '../../navigation/adminStackNavigation'
@@ -64,13 +63,13 @@ const AdminCategory = () => {
             activeOpacity={0.7}
         >
             <Text style={styles.serialNumber}>{index + 1}</Text>
-            <Text style={styles.nameCategory}>{item.name}</Text>
-            <View style={styles.actionCategoryButtons}>
-                <TouchableOpacity onPress={() => navigation.navigate("AdminAddCategory", { categoryId: item.id })} style={[styles.actionCategoryButton, { backgroundColor: "#3a9bfb"}]}>
-                    <Text style={styles.actionCategoryTextButton}>Sửa</Text>
+            <Text style={styles.name}>{item.name}</Text>
+            <View style={styles.actionButtons}>
+                <TouchableOpacity onPress={() => navigation.navigate("AdminAddCategory", { categoryId: item.id })} style={[styles.actionButton, { backgroundColor: "#3a9bfb"}]}>
+                    <Icon name="edit" size={16} color="#fff" style={styles.actionIconButton}/>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handelDelete(item.id)} style={[styles.actionCategoryButton, { backgroundColor: "#ff3737"}]}>
-                    <Text style={styles.actionCategoryTextButton}>Xóa</Text>
+                <TouchableOpacity onPress={() => handelDelete(item.id)} style={[styles.actionButton, { backgroundColor: "#ff3737"}]}>
+                    <Icon name="trash" size={16} color="#fff" style={styles.actionIconButton}/>
                 </TouchableOpacity>
             </View>
         </TouchableOpacity>
@@ -78,26 +77,28 @@ const AdminCategory = () => {
 
     return (
         <>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
-                <Icon name='arrow-left' style={styles.iconGoBack}/>
-            </TouchableOpacity>
-
             <View style={styles.container}>
-                <Text style={styles.titleHeader}>Quản lý danh mục</Text>
-
-                <View style={{ padding: 5 }}>
-                    <TouchableOpacity onPress={() => navigation.navigate('AdminAddCategory', {})} style={styles.addCategoryButton}>
-                        <Icon name='plus' size={16} color="#1ABDBE"/>
-                    </TouchableOpacity>
-                </View>
-
                 <FlatList
                     data={categories}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id.toString()}
-                    style={{ padding: 5 }}
+                    contentContainerStyle={{ paddingBottom: 100, padding: 16 }}
+                    showsVerticalScrollIndicator={false}
+                    ListHeaderComponent={
+                        <>
+                            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
+                                <Icon name='arrow-left' style={styles.iconGoBack}/>
+                            </TouchableOpacity>
+
+                            <Text style={styles.titleHeader}>Quản lý danh mục</Text>
+                        </>
+                    }
                 />
             </View>
+
+            <TouchableOpacity onPress={() => navigation.navigate('AdminAddCategory', {})} style={styles.addCategoryButton}>
+                <Icon name='plus' size={16} color="#fff"/>
+            </TouchableOpacity>
         </>
     )
 }
@@ -106,8 +107,7 @@ export default AdminCategory
 
 const styles = StyleSheet.create({
     container: {
-        padding: 16,
-        flexGrow: 1,
+        flex: 1,
         backgroundColor: "#e1f3f8",
     },
     titleHeader: {
@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
     },
     goBackButton: {
         position: "absolute",
-        left: 20,
-        top: 20,
+        left: 5,
+        top: 5,
         height: 50,
         width: 50,
         zIndex: 999,
@@ -131,13 +131,16 @@ const styles = StyleSheet.create({
 
     // Nút thêm danh mục
     addCategoryButton: {
-        backgroundColor: "#fff",
+        position: "absolute",
+        bottom: 40,
+        right: 20,
+        backgroundColor: "#1ABDBE",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        width: "100%",
+        width: 48,
         height: 48,
-        borderRadius: 5,
+        borderRadius: 24,
         elevation: 3,
         marginTop: 20,
     },
@@ -159,26 +162,25 @@ const styles = StyleSheet.create({
         fontSize: 16,
         padding: 5,
     },
-    nameCategory: {
+    name: {
         flex: 3,
         fontSize: 16,
         padding: 5,
     },
-    actionCategoryButtons: {
+    actionButtons: {
         flex: 1,
         flexDirection: "row",
         justifyContent: "center",
         gap: 10,
         padding: 5,
     },
-    actionCategoryButton: {
+    actionButton: {
         padding: 5,
         borderRadius: 3,
-
     },
-    actionCategoryTextButton: {
-        color: "#fff",
-        fontSize: 14,
-        fontWeight: "bold",
+    actionIconButton: {
+        padding: 2,
+        alignItems: "center",
+        justifyContent: "center",
     },
 })

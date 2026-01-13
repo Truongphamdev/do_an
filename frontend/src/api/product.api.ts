@@ -15,6 +15,8 @@ export interface ProductInterface {
     image?: string;
     // image_url dùng cho hiển thị
     image_url?: string;
+    
+    is_menu_active?: boolean;
 }
 
 export interface ProductImage {
@@ -114,5 +116,15 @@ export const ProductApi = {
     }) => {
         const { data } = await api.get<ProductInterface[]>("/products/", { params });
         return data;
-    }
+    },
+
+    enableMenu: async (id: number) => {
+        const { data } = await api.patch<ProductInterface>(`/products/${id}/enable_menu/`);
+        return data;
+    },
+
+    disableMenu: async (id: number) => {
+        const { data } = await api.patch<ProductInterface>(`/products/${id}/disable_menu/`);
+        return data;
+    },
 }

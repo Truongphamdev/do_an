@@ -91,6 +91,24 @@ class ProductViewSet(viewsets.ModelViewSet):
         product.status = status_value
         product.save()
         return Response(ProductSerializer(product).data, status=status.HTTP_200_OK)
+    @action(detail=True, methods=['patch'], url_path='disable_menu', permission_classes=[IsAuthenticated])
+    def disable_menu(self, request, pk=None):
+        product = self.get_object()
+        product.is_menu_active = False
+        product.save(update_fields=['is_menu_active'])
+        
+        serializer = self.get_serializer(product)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['patch'], url_path='enable_menu', permission_classes=[IsAuthenticated])
+    def enable_menu(self, request, pk=None):
+        product = self.get_object()
+        product.is_menu_active = True
+        product.save(update_fields=['is_menu_active'])
+        # trả dữ liệu về ngay phục vụ cập nhật UI
+        serializer = self.get_serializer(product)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
 
 class ImageViewSet(viewsets.ViewSet):
     permission_classes = [IsAdminOrReadOnly]

@@ -41,7 +41,7 @@ const AdminAddCategory = () => {
     }, [categoryId]);
 
     // lấy category theo id
-    const loadCategoryById = async ( id: number ) => {
+    const loadCategoryById = async (id: number) => {
         try {
             const categoryById = await CategoryApi.getById(id);
 
@@ -54,19 +54,17 @@ const AdminAddCategory = () => {
 
     // Hàm chức năng thêm/sửa danh mục
     const onSubmit = async (data: categoryForm) => {
-        if(isEditing) {
-            if (categoryId !== undefined){
-                // Sửa
-                try {
-                    await CategoryApi.update(categoryId, {
-                        name: data.name,
-                        description: data.description,
-                    });
-                    success("Cập nhật danh mục thành công!");
-                    navigation.goBack();
-                } catch (err: any) {
-                    error("Cập nhật danh mục thất bại");
-                }
+        if(isEditing && categoryId !== undefined) {
+            // Sửa
+            try {
+                await CategoryApi.update(categoryId, {
+                    name: data.name,
+                    description: data.description,
+                });
+                success("Cập nhật danh mục thành công!");
+                navigation.goBack();
+            } catch (err: any) {
+                error("Cập nhật danh mục thất bại");
             }
         } else {
             try {

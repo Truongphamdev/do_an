@@ -1,7 +1,7 @@
 import React from "react";
 import { createNativeStackNavigator, NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-import PendingPaymentList from "../screens/staff/cashier/PendingPaymentList";
+import PendingPaymentList from "../screens/staff/cashier/pendingPaymentList";
 import WaitingForPayment from "../screens/staff/cashier/waitingForPayment";
 import InvoiceDetail from "../screens/staff/cashier/invoiceDetail";
 import Payment from "../screens/staff/cashier/payment";

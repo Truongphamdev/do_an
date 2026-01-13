@@ -164,16 +164,32 @@ const AdminProduct = () => {
 
   // Chức năng cập nhật trạng thái sản phẩm
   const handleToggleStatus = async (id: number) => {
-    try {
-      const product = products.find(prev => prev.id === id);
-      if (!product) return;
+    const product = products.find(prev => prev.id === id);
+    if (!product) return;
 
-      const newStatus = product.status === "available" ? "unavailable" : "available";
+    const newStatus = product.status === "available" ? "unavailable" : "available";
 
-      await ProductApi.updateStatus(id, newStatus);
-    } catch (err: any) {
-      error("Cập nhật trạng thái sản phẩm thất bại!");
-    }
+    confirm({
+      title: "Xác nhận",
+      message: `Bạn muốn ${newStatus === "available" ? "bật" : "tắt"} sản phẩm này?`,
+      onConfirm: async () => {
+        try {
+          await ProductApi.updateStatus(id, newStatus);
+
+          setProducts(prev =>
+            prev.map(product =>
+              product.id === id
+              ? {...product, status: newStatus}
+              : product
+            )
+          );
+
+          success("Cập nhật thành công!");
+        } catch (err: any) {
+          error("Cập nhật trạng thái sản phẩm thất bại!");
+        }
+      }
+    })
   }
   // Mảng khoảng giá
   const PRICE_RANGE = [
@@ -348,17 +364,16 @@ const AdminProduct = () => {
       <View style={styles.actionButtons}>
         <View style={styles.actionRow}>
           <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#3a9bfb" }]} onPress={() => navigation.navigate("AdminAddProduct", { productId: item.id })}>
-            <Text style={styles.actionTextButton}>Sửa</Text>
+            <Icon name="edit" size={16} color="#fff" style={styles.actionIconButton}/>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#ff3737" }]} onPress={() => handleDelete(item.id)}>
-            <Text style={styles.actionTextButton}>Xóa</Text>
+            <Icon name="trash" size={16} color="#fff" style={styles.actionIconButton}/>
           </TouchableOpacity>
         </View>
 
         <AppStatusSwitch
           value={item.status === "available"}
           onToggle={() => handleToggleStatus(item.id)}
-          style={styles.swithButton}
         />
       </View>
     </TouchableOpacity>
@@ -370,42 +385,51 @@ const AdminProduct = () => {
   return (
     <>
       <View style={styles.container}>
-        <Text style={styles.headerTitle}>Quản lý sản phẩm</Text>
-
-        <View style={styles.boxSearch}>
-          <View style={styles.searchInputWrapper}>
-            <TextInput
-              value={searchText}
-              onChangeText={(text) => setSearchText(text)}
-              placeholder='Tìm kiếm'
-              style={styles.searchInput}
-            />
-            {searchText.length > 0 && (
-              <TouchableOpacity onPress={handleClearSearch} style={styles.clearSearchButton}>
-                <Icon name='times-circle' size={16} color="#909090" />
-              </TouchableOpacity>
-            )}
-          </View>
-          <TouchableOpacity onPress={applySearchFilter} style={styles.searchButton}>
-            <Icon name='search' size={16} color="#909090"/>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={openFilter} style={styles.filterButton}>
-            <Icon name='filter' size={16} color="#909090"/>
-          </TouchableOpacity>
-        </View>
         
         {products.length > 0 ? (
           <FlatList
             data={products}
             renderItem={renderItem}
             keyExtractor={(item) => item.id.toString()}
-            style={{ padding: 5, marginTop: 5, }}
+            contentContainerStyle={{ paddingBottom: 30, padding: 16 }}
+            showsVerticalScrollIndicator={false}
+            ListHeaderComponent={
+              <>
+                <Text style={styles.headerTitle}>Quản lý sản phẩm</Text>
+
+                <View style={styles.boxSearch}>
+                  <View style={styles.searchInputWrapper}>
+                    <TextInput
+                      value={searchText}
+                      onChangeText={(text) => setSearchText(text)}
+                      placeholder='Tìm kiếm'
+                      style={styles.searchInput}
+                    />
+                    {searchText.length > 0 && (
+                      <TouchableOpacity onPress={handleClearSearch} style={styles.clearSearchButton}>
+                        <Icon name='times-circle' size={16} color="#909090" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  <TouchableOpacity onPress={applySearchFilter} style={styles.searchButton}>
+                    <Icon name='search' size={16} color="#909090"/>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={openFilter} style={styles.filterButton}>
+                    <Icon name='filter' size={16} color="#909090"/>
+                  </TouchableOpacity>
+                </View>
+              </>
+            }
           />
         ) : (
-          <View style={styles.noProduct}>
-            <Icon name='utensils' size={80} color="#1ABDBE"/>
-            <Text style={styles.textNoProduct}>Hiện tại chưa có sản phẩm. Vui lòng thêm sản phẩm!</Text>
-          </View>
+          <>
+            <Text style={styles.headerTitle}>Quản lý sản phẩm</Text>
+
+            <View style={styles.noProduct}>
+              <Icon name='utensils' size={80} color="#1ABDBE"/>
+              <Text style={styles.textNoProduct}>Hiện tại chưa có sản phẩm. Vui lòng thêm sản phẩm!</Text>
+            </View>
+          </>
         )}
 
       </View>
@@ -430,16 +454,25 @@ const AdminProduct = () => {
               transform: [{ translateY: fabAnim }],
             }}
         >
+          {/* Thêm sản phẩm */}
           <View style={styles.itemFab}>
             <Text style={styles.itemFabLabel}>Thêm sản phẩm</Text>
             <TouchableOpacity style={[styles.itemFabButton, { backgroundColor: "#ffb92d" }]} onPress={() => { closeMenuFab(); navigation.navigate('AdminAddProduct', {}) }}>
               <Icon name='utensils' size={24} color="#fff" />
             </TouchableOpacity>
           </View>
+          {/* Quản lý danh mục */}
           <View style={styles.itemFab}>
             <Text style={styles.itemFabLabel}>Quản lý danh mục</Text>
             <TouchableOpacity style={[styles.itemFabButton, { backgroundColor: "#0080FF" }]} onPress={() => { closeMenuFab(); navigation.navigate('AdminCategory') }}>
               <Icon name='th-large' size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          {/* Quản lý bàn */}
+          <View style={styles.itemFab}>
+            <Text style={styles.itemFabLabel}>Quản lý bàn</Text>
+            <TouchableOpacity style={[styles.itemFabButton, { backgroundColor: "#66CC00" }]} onPress={() => { closeMenuFab(); navigation.navigate('AdminTable') }}>
+              <Icon name='chair' size={24} color="#fff" />
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -575,9 +608,7 @@ export default AdminProduct
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    flexGrow: 1,
+    flex: 1,
     backgroundColor: "#e1f3f8",
   },
   headerTitle: {
@@ -595,7 +626,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "100%",
     height: 42,
-    paddingHorizontal: 5,
   },
   searchInputWrapper: {
     flex: 3,
@@ -655,7 +685,7 @@ const styles = StyleSheet.create({
     right: 0,
     left: 0,
     backgroundColor: "rgba(235, 229, 229, 0.4)",
-    zIndex: 900,
+    zIndex: 998,
   },
   containerMenuFab: {
     position: "absolute",
@@ -702,7 +732,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     top: 0,
     right: 0,
-    width: 260,
+    width: 300,
     zIndex: 999,
     elevation: 5,
   },
@@ -873,13 +903,9 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: 3,
   },
-  actionTextButton: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#fff",
-    textAlign: "center",
-  },
-  swithButton: {
-    
+  actionIconButton: {
+    padding: 2,
+    alignItems: "center",
+    justifyContent: "center",
   },
 })
