@@ -8,12 +8,7 @@ interface NotifyContextType {
     error: (message: string) => void;
     warm: (message: string) => void;
     info: (message: string) => void;
-    confirm: (options: {
-        title?: string;
-        message: string;
-        onConfirm?: () => void;
-        onCancel?: () => void;
-    }) => void;
+    confirm: (options: ConfirmOptions) => void;
 }
 
 interface ConfirmOptions {
@@ -21,6 +16,11 @@ interface ConfirmOptions {
     message: string;
     onConfirm?: () => void;
     onCancel?: () => void;
+    
+    confirmText?: string;
+    cancelText?: string;
+    hideCancel?: boolean;
+    showClose?: boolean;
 }
 
 const NotifyContext = createContext<NotifyContextType | null>(null);
@@ -58,11 +58,27 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                         <Text style={styles.title}>{confirmOptions?.title || "Xác nhận"}</Text>
                         <Text style={styles.textMessage}>{confirmOptions?.message}</Text>
                         <View style={styles.containerButton}>
-                            <TouchableOpacity onPress={handleCancel} style={[styles.button, { backgroundColor: "#e3e3e3"}]}>
-                                <Text style={styles.textButton}>Hủy</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleConfirm} style={[styles.button, { backgroundColor: "#FCB35E"}]}>
-                                <Text style={[styles.textButton, { color: "#fff" }]}>Xác nhận</Text>
+                            {confirmOptions?.showClose && (
+                                <TouchableOpacity
+                                    onPress={() => setConfirmOptions(null)}
+                                    style={[styles.button, { backgroundColor: "#ddd" }]}
+                                >
+                                    <Text style={styles.textButton}>Đóng</Text>
+                                </TouchableOpacity>
+                            )}
+                            {!confirmOptions?.hideCancel && (
+                                <TouchableOpacity
+                                    onPress={handleCancel}
+                                    style={[styles.button, { backgroundColor: "#e3e3e3"}]}
+                                >
+                                    <Text style={styles.textButton}>{confirmOptions?.cancelText || "Hủy"}</Text>
+                                </TouchableOpacity>
+                            )}
+                            <TouchableOpacity
+                                onPress={handleConfirm}
+                                style={[styles.button, { backgroundColor: "#FCB35E"}]}
+                            >
+                                <Text style={[styles.textButton, { color: "#fff" }]}>{confirmOptions?.confirmText || "Xác nhận"}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

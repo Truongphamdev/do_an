@@ -15,18 +15,17 @@ type TableCreate = Omit<TableInterface, "id" | "created_at" | "updated_at">;
 type TableUpdate = Partial<TableCreate>;
 
 export const TableApi = {
-    getList: async () => {
-        const { data } = await api.get<TableInterface[]>("tables/");
+    getList: async (params?: {
+        status?: "available" | "occupied" | "reserved";
+        is_active?: boolean;
+        capacity?: number;
+    }) => {
+        const { data } = await api.get<TableInterface[]>("tables/", { params });
         return data;
     },
 
     getById: async (id: number) => {
         const { data } = await api.get<TableInterface>(`tables/${id}/`);
-        return data;
-    },
-
-    getAvailableTables: async () => {
-        const { data } = await api.get<TableInterface[]>("tables/available/");
         return data;
     },
 
@@ -51,6 +50,11 @@ export const TableApi = {
 
     disable: async (id: number) => {
         const { data } = await api.patch<TableInterface>(`tables/${id}/disable/`);
+        return data;
+    },
+
+    updateStatus: async (id: number, status: "available" | "occupied" | "reserved") => {
+        const { data } = await api.patch<TableInterface>(`tables/${id}/update_status/`, { status });
         return data;
     },
 }

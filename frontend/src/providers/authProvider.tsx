@@ -1,14 +1,17 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export type UserRole = "admin" | "chef" | "waiter" | "cashier";
+export type UserRole = "admin" | "chef" | "waiter" | "cashier" | "customer";
 
 interface User {
     id: number;
+    username: string;
     email: string;
     role: UserRole;
     first_name: string;
     last_name: string;
+    address: string;
+    phone: string;
 };
 
 interface AuthContextType {

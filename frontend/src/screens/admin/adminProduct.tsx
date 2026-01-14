@@ -13,8 +13,6 @@ import { ProductApi, type ProductInterface } from '../../api/product.api'
 import { useNotify } from '../../providers/notificationProvider'
 // hook
 import { useCategories } from '../../hooks/useCategories'
-// webSocket
-import { useWebSocket } from '../../hooks/useWebsocket'
 
 // ảnh mặc định khi ko lấy được dữ liệu ảnh
 const placeholderImageProduct = require("../../assets/images/placeholderProduct.png");
@@ -77,74 +75,6 @@ const AdminProduct = () => {
     }, [fetchProducts])
   );
 
-  // --- REALTIME PRODUCT ---
-  useWebSocket((message) => {
-    console.log("📌 Realtime product:", message);
-
-    switch(message.type) {
-      case "PRODUCT_CREATED":
-        setProducts(prev => [
-          {
-            ...message.product,
-            image: message.product.image_url ?? "https://via.placeholder.com/40x30"
-          },
-          ...prev,
-        ]);
-        break;
-        
-      case "PRODUCT_UPDATED":
-        setProducts(prev =>
-          prev.map(item =>
-            item.id === message.product.id
-            ? {
-                ...message.product,
-                image: message.product.image_url ?? "https://via.placeholder.com/40x30"
-              }
-            : item
-          )
-        );
-        break;
-
-      case "PRODUCT_DELETED":
-        setProducts(prev => prev.filter(item => item.id !== message.id));
-        break;
-
-      default:
-        console.log("❓ Unknown realtime type", message.type);
-    }
-  }, 'ws://10.0.2.2:8000/ws/products/');
-
-  // --- REALTIME IMAGE UPDATE ---
-  useWebSocket((message) => {
-    console.log("📌 Realtime image:", message);
-
-    if (message.type === "IMAGE_UPDATED" || message.type === "IMAGE_CREATED") {
-      setProducts(prev =>
-        prev.map(item =>
-          item.id === message.product_id
-          ? {
-              ...item,
-              image: message.image_url ?? "https://via.placeholder.com/40x30"
-            }
-          : item
-        )
-      );
-    }
-    if (message.type === "IMAGE_DELETED") {
-      setProducts(prev =>
-        prev.map(item =>
-          item.id === message.product_id
-          ? {
-            ...item,
-            image: message.was_primary ? "https://via.placeholder.com/40x30" : item.image
-          }
-          : item
-        )
-      )
-    }
-  }, 'ws://10.0.2.2:8000/ws/images/');
-
-
   // Chức năng xóa sản phẩm
   const handleDelete = async (id: number) => {
     confirm({
@@ -153,6 +83,8 @@ const AdminProduct = () => {
       onConfirm: async () => {
         try {
           await ProductApi.remove(id);
+
+          setProducts(prev => prev.filter(product => product.id !== id));
           success("Xóa sản phẩm thành công!");
         } catch (err: any) {
           error("Xóa sản phẩm thất bại!");

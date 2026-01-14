@@ -1,18 +1,25 @@
-import React, { useEffect, useState } from "react";
+
+
+//---------------------------------
+{/** NAVIGATION THEO ROLE */}
+//---------------------------------
+
+import React from "react";
 import { ActivityIndicator, View } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
 import AuthNavigator from "./authNavigation";
 import { AdminDrawerNavigator } from "./adminDrawerNavigation";
 import ChefNavigator from "./chefNavigation";
 import WaiterNavigator from "./waiterNavigation";
 import CashierNavigator from "./cashierNavigation";
+import CustomerNavigation from "./customerNavigation";
 import { useAuth, UserRole } from "../providers/authProvider";
 
 const ROLE_NAVIGATORS: Record<UserRole, React.ComponentType<any>> = {
     admin: AdminDrawerNavigator,
     chef: ChefNavigator,
     waiter: WaiterNavigator,
-    cashier: CashierNavigator,           
+    cashier: CashierNavigator,
+    customer: CustomerNavigation,      
 };
 
 const RootNavigator = () => {
@@ -28,13 +35,13 @@ const RootNavigator = () => {
         );
     }
 
-    const Navigator = user ? ROLE_NAVIGATORS[user.role] : null;
+    if (!user) {
+        return <AuthNavigator />
+    }
 
-    return (
-        <NavigationContainer>
-            {Navigator ? <Navigator/> : <AuthNavigator/>}
-        </NavigationContainer>
-    );
+    const Navigator = ROLE_NAVIGATORS[user.role];
+
+    return <Navigator />
 };
 
 export default RootNavigator

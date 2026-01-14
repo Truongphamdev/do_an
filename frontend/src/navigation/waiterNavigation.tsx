@@ -5,12 +5,14 @@ import TableList from "../screens/staff/waiter/tableList";
 import OrderMenu from "../screens/staff/waiter/orderMenu";
 import OrderList from "../screens/staff/waiter/orderList";
 import StatusOrder from "../screens/staff/waiter/statusOrder";
+import Profile from "../screens/profile/profileScreen";
 
 export type WaiterStackParamList = {
     TableList: undefined;
     OrderMenu: undefined;
     OrderList: undefined;
     StatusOrder: undefined;
+    Profile: undefined;
 }
 
 export type WaiterNav = NativeStackNavigationProp<WaiterStackParamList>;
@@ -24,6 +26,7 @@ const WaiterNavigator = () => {
             <Stack.Screen name="OrderMenu" component={OrderMenu} options={{ headerShown: false }}/>
             <Stack.Screen name="OrderList" component={OrderList} options={{ headerShown: false }}/>
             <Stack.Screen name="StatusOrder" component={StatusOrder} options={{ headerShown: false }}/>
+            <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }}/>
         </Stack.Navigator>
     )
 }
