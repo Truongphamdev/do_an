@@ -47,6 +47,7 @@ const AdminCategory = () => {
             onConfirm: async () => {
                 try {
                     await CategoryApi.remove(id);
+                    setCategories(prev => prev.filter(category => category.id !== id));
                     success("Xóa danh mục thành công!");
                 } catch (err) {
                     error("Xóa danh mục thất bại!");
@@ -108,12 +109,12 @@ export default AdminCategory
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#e1f3f8",
+        backgroundColor: "#f5f6fa",
     },
     titleHeader: {
         fontSize: 28,
         fontWeight: "900",
-        color: "#1ABDBE",
+        color: "#0066cc",
         textAlign: "center",
     },
     goBackButton: {
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: 40,
         right: 20,
-        backgroundColor: "#1ABDBE",
+        backgroundColor: "#0066cc",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         borderRadius: 5,
         padding: 5,
-        elevation: 3,
+        elevation: 5,
     },
     serialNumber: {
         flex: 0.5,

@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 28,
         fontWeight: '900',
-        color: "#1ABDBE",
+        color: "#0066cc",
         textAlign: "center",
     },
     goBackButton: {
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     },
     button: {
         width: "40%",
-        backgroundColor: "#1ABDBE",
+        backgroundColor: "#0066cc",
         borderRadius: 3,
         padding: 10,
     },

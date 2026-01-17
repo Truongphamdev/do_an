@@ -57,4 +57,9 @@ export const TableApi = {
         const { data } = await api.patch<TableInterface>(`tables/${id}/update_status/`, { status });
         return data;
     },
+
+    reserved: async (id: number) => {
+        const { data } = await api.patch<TableInterface>(`tables/${id}/reserved/`);
+        return data;
+    },
 }

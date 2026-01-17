@@ -181,51 +181,50 @@ const AdminStaff = () => {
   return (
     <>
       <View style={styles.container}>
+        <FlatList
+          data={users}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={{ padding: 16, marginBottom: 30}}
+          ListHeaderComponent={
+            <>
+              <Text style={styles.headerTitle}>Quản lý người dùng</Text>
 
-        {users.length > 0 ? (
-          <FlatList
-            data={users}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={{ padding: 16, marginBottom: 30}}
-            ListHeaderComponent={
-              <>
-                <Text style={styles.headerTitle}>Quản lý người dùng</Text>
-
-                <View style={styles.boxSearch}>
-                  <View style={styles.searchInputWrapper}>
-                    <TextInput
-                      value={searchText}
-                      onChangeText={(text) => setSearchText(text)}
-                      placeholder='Tìm kiếm'
-                      style={styles.searchInput}
-                    />
-                    {searchText.length > 0 && (
-                      <TouchableOpacity onPress={handleClearSearch} style={styles.clearSearchButton}>
-                        <Icon name='times-circle' size={16} color="#909090" />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                  <TouchableOpacity onPress={applySearchFilter} style={styles.searchButton}>
-                    <Icon name='search' size={16} color="#909090"/>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={openFilter} style={styles.filterButton}>
-                    <Icon name='filter' size={16} color="#909090"/>
-                  </TouchableOpacity>
+              <View style={styles.boxSearch}>
+                <View style={styles.searchInputWrapper}>
+                  <TextInput
+                    value={searchText}
+                    onChangeText={(text) => setSearchText(text)}
+                    placeholder='Tìm kiếm'
+                    style={styles.searchInput}
+                  />
+                  {searchText.length > 0 && (
+                    <TouchableOpacity onPress={handleClearSearch} style={styles.clearSearchButton}>
+                      <Icon name='times-circle' size={16} color="#909090" />
+                    </TouchableOpacity>
+                  )}
                 </View>
-              </>
-            }
-          />
-        ) : (
-          <>
-            <Text style={styles.headerTitle}>Quản lý người dùng</Text>
+                <TouchableOpacity onPress={applySearchFilter} style={styles.searchButton}>
+                  <Icon name='search' size={16} color="#909090"/>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={openFilter} style={styles.filterButton}>
+                  <Icon name='filter' size={16} color="#909090"/>
+                </TouchableOpacity>
+              </View>
+            </>
+          }
+          ListEmptyComponent={
+            <>
+              <View style={styles.noUser}>
+                <Text style={styles.noUserContent}>Không có người dùng phù hợp!</Text>
 
-            <View style={styles.noUser}>
-              <Icon name='users' size={80} color="#1ABDBE"/>
-              <Text style={styles.textnoUser}>Hiện tại chưa có người dùng. Vui lòng thêm người dùng!</Text>
-            </View>
-          </>
-        )}
+                <TouchableOpacity onPress={handleResetFilter} style={styles.noProductButton} >
+                  <Text style={{ color: "#0066cc", fontWeight: "bold" }}>Bỏ lọc</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          }
+        />
       </View>
 
       {/* FILTER */}
@@ -323,12 +322,12 @@ export default AdminStaff
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#e1f3f8",
+    backgroundColor: "#f5f6fa",
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: "900",
-    color: "#1ABDBE",
+    color: "#0066cc",
     marginBottom: 20,
     textAlign: "center",
   },
@@ -386,7 +385,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#1ABDBE",
+    backgroundColor: "#0066cc",
     alignItems: "center",
     justifyContent: "center",
     elevation: 5,
@@ -397,16 +396,25 @@ const styles = StyleSheet.create({
   noUser: {
     flex: 1,
     width: "100%",
-    marginTop: 10,
+    marginTop: 30,
     alignItems: "center",
     justifyContent: "center",
   },
-  textnoUser: {
+  noUserContent: {
     marginTop: 10,
     fontSize: 16,
     textAlign: "center",
     fontWeight: "bold",
   },
+  noProductButton: {
+    padding: 5,
+    borderColor: "#0066cc",
+    borderWidth: 1,
+    borderRadius: 5,
+    marginTop: 12,
+  },
+
+  // card
   card: {
     marginTop: 10,
     flexDirection: "row",
@@ -516,12 +524,12 @@ const styles = StyleSheet.create({
     padding: 10,
     fontWeight: "900",
     color: "#fff",
-    backgroundColor: "#1ABDBE",
+    backgroundColor: "#0066cc",
   },
   filterOptionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#1ABDBE",
+    color: "#0066cc",
     marginTop: 8,
     marginLeft: 10,
   },
@@ -543,8 +551,8 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   filterActive: {
-    backgroundColor: "#1ABDBE",
-    borderColor: "#1ABDBE",
+    backgroundColor: "#0066cc",
+    borderColor: "#0066cc",
   },
   filterActionButtons: {
     marginTop: 16,

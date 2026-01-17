@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosError } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApi } from "./auth.api";
+import { tokenManager } from "./authTokenManager";
 
 // Queue để lưu các request khi đang refresh token
 interface QueueItem {
@@ -25,8 +26,8 @@ const api = axios.create({
 });
 
 // Gắn access token tự động vào mỗi request => mỗi khi gọi api thì header Authorization sẽ tự động có token
-api.interceptors.request.use(async (config) => {
-    const token = await AsyncStorage.getItem("access_token");
+api.interceptors.request.use((config) => {
+    const token = tokenManager.get();
     if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -69,9 +70,10 @@ api.interceptors.response.use(
         }
 
         const isAuthError = error.response?.status === 401
+        const hasAuthHeader = !!originalRequest.headers?.Authorization;
 
         // Nếu lỗi 401 và chưa retry lần nào
-        if (isAuthError && !originalRequest._retry) {
+        if (isAuthError && hasAuthHeader && !originalRequest._retry) {
             if (isRefreshing) {
                 // Nếu đang refresh, đẩy request vào queue
                 return new Promise((resolve, reject) => {
@@ -95,8 +97,8 @@ api.interceptors.response.use(
                 const newAccess = response.access;
 
                 // Lưu token mới và set header mặc định
-                await AsyncStorage.setItem("access_token", newAccess);
-                api.defaults.headers.common["Authorization"] = "Bearer " + newAccess;
+                tokenManager.set(newAccess);
+                api.defaults.headers.common.Authorization = `Bearer ${newAccess}`;
 
                 processQueue(null, newAccess); // Xử lý các request đang queue
                 return api(originalRequest); // retry request vừa bị 401
@@ -111,6 +113,7 @@ api.interceptors.response.use(
 
                 // ❗ CHỈ logout khi refresh token cũng hết hạn
                 if (isRefreshTokenExpired) {
+                    tokenManager.clear();
                     await AsyncStorage.multiRemove([
                         "access_token",
                         "refresh_token",

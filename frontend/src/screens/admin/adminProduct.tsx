@@ -317,53 +317,50 @@ const AdminProduct = () => {
   return (
     <>
       <View style={styles.container}>
-        
-        {products.length > 0 ? (
-          <FlatList
-            data={products}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={{ paddingBottom: 30, padding: 16 }}
-            showsVerticalScrollIndicator={false}
-            ListHeaderComponent={
-              <>
-                <Text style={styles.headerTitle}>Quản lý sản phẩm</Text>
+        <FlatList
+          data={products}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={{ paddingBottom: 80, padding: 16 }}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <>
+              <Text style={styles.headerTitle}>Quản lý sản phẩm</Text>
 
-                <View style={styles.boxSearch}>
-                  <View style={styles.searchInputWrapper}>
-                    <TextInput
-                      value={searchText}
-                      onChangeText={(text) => setSearchText(text)}
-                      placeholder='Tìm kiếm'
-                      style={styles.searchInput}
-                    />
-                    {searchText.length > 0 && (
-                      <TouchableOpacity onPress={handleClearSearch} style={styles.clearSearchButton}>
-                        <Icon name='times-circle' size={16} color="#909090" />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                  <TouchableOpacity onPress={applySearchFilter} style={styles.searchButton}>
-                    <Icon name='search' size={16} color="#909090"/>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={openFilter} style={styles.filterButton}>
-                    <Icon name='filter' size={16} color="#909090"/>
-                  </TouchableOpacity>
+              <View style={styles.boxSearch}>
+                <View style={styles.searchInputWrapper}>
+                  <TextInput
+                    value={searchText}
+                    onChangeText={(text) => setSearchText(text)}
+                    placeholder='Tìm kiếm'
+                    style={styles.searchInput}
+                  />
+                  {searchText.length > 0 && (
+                    <TouchableOpacity onPress={handleClearSearch} style={styles.clearSearchButton}>
+                      <Icon name='times-circle' size={16} color="#909090" />
+                    </TouchableOpacity>
+                  )}
                 </View>
-              </>
-            }
-          />
-        ) : (
-          <>
-            <Text style={styles.headerTitle}>Quản lý sản phẩm</Text>
+                <TouchableOpacity onPress={applySearchFilter} style={styles.searchButton}>
+                  <Icon name='search' size={16} color="#909090"/>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={openFilter} style={styles.filterButton}>
+                  <Icon name='filter' size={16} color="#909090"/>
+                </TouchableOpacity>
+              </View>
+            </>
+          }
 
+          ListEmptyComponent={
             <View style={styles.noProduct}>
-              <Icon name='utensils' size={80} color="#1ABDBE"/>
-              <Text style={styles.textNoProduct}>Hiện tại chưa có sản phẩm. Vui lòng thêm sản phẩm!</Text>
-            </View>
-          </>
-        )}
+              <Text style={styles.noProductContent}>Không tìm thấy sản phẩm phù hợp</Text>
 
+              <TouchableOpacity onPress={handleResetFilter} style={styles.noProductButton} >
+                <Text style={{ color: "#0066cc", fontWeight: "bold" }}>Bỏ lọc</Text>
+              </TouchableOpacity>
+            </View>
+          }
+        />
       </View>
       
       
@@ -541,12 +538,12 @@ export default AdminProduct
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#e1f3f8",
+    backgroundColor: "#f5f6fa",
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: "900",
-    color: "#1ABDBE",
+    color: "#0066cc",
     marginBottom: 20,
     textAlign: "center",
   },
@@ -604,7 +601,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#1ABDBE",
+    backgroundColor: "#0066cc",
     alignItems: "center",
     justifyContent: "center",
     elevation: 5,
@@ -673,12 +670,12 @@ const styles = StyleSheet.create({
     padding: 10,
     fontWeight: "900",
     color: "#fff",
-    backgroundColor: "#1ABDBE",
+    backgroundColor: "#0066cc",
   },
   filterOptionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#1ABDBE",
+    color: "#0066cc",
     marginTop: 8,
     marginLeft: 10,
   },
@@ -696,8 +693,8 @@ const styles = StyleSheet.create({
     borderColor: "#909090",
   },
   filterActive: {
-    backgroundColor: "#1ABDBE",
-    borderColor: "#1ABDBE",
+    backgroundColor: "#0066cc",
+    borderColor: "#0066cc",
   },
   filterTextOption: {
     fontSize: 16,
@@ -742,15 +739,22 @@ const styles = StyleSheet.create({
   noProduct: {
     flex: 1,
     width: "100%",
-    marginTop: 10,
+    marginTop: 30,
     alignItems: "center",
     justifyContent: "center",
   },
-  textNoProduct: {
+  noProductContent: {
     marginTop: 10,
     fontSize: 16,
     textAlign: "center",
     fontWeight: "bold",
+  },
+  noProductButton: {
+    padding: 5,
+    borderColor: "#0066cc",
+    borderWidth: 1,
+    borderRadius: 5,
+    marginTop: 12,
   },
 
   // style cho từng item product

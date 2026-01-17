@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 32,
     fontWeight: "900",
-    color: "#1ABDBE",
+    color: "#0066cc",
   },
   item: {
     width: '100%',
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   registerButton: {
-    backgroundColor: "#1ABDBE",
+    backgroundColor: "#0066cc",
     width: '100%',
     alignItems: "center",
     marginBottom: 30,

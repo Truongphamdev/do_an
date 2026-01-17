@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   titleHeader: {
     fontSize: 28,
     fontWeight: '900',
-    color: "#1ABDBE",
+    color: "#0066cc",
     textAlign: "center",
     marginBottom: 10,
   },

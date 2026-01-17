@@ -18,9 +18,9 @@ export const AdminTabBottom = () => {
                 headerShown: false,
                 tabBarShowLabel: false,
                 tabBarStyle: {
-                    backgroundColor: '#fff',
+                    backgroundColor: '#0066cc',
                     elevation: 15,
-                    height: 60,
+                    height: 48,
                     paddingTop: 10,
                 },
 
@@ -37,13 +37,13 @@ export const AdminTabBottom = () => {
                                 <View style={{
                                     width: 32,
                                     height: 3,
-                                    backgroundColor: theme.color.secondary,
+                                    backgroundColor: "#fff",
                                     borderRadius: 2,
                                     position: "absolute",
-                                    top: -10,
+                                    top: -5,
                                 }}/>
                             )}
-                            <Icon name={iconName} size={24} color={focused ? theme.color.secondary : "#989898"} style={{ marginTop: 6 }}/>
+                            <Icon name={iconName} size={20} color={"#fff"} style={{ marginTop: 6 }}/>
                         </View>
                     )
                 },

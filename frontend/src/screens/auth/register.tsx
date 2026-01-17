@@ -36,8 +36,8 @@ const Register = () => {
     try {
       setLoading(true);
       await authApi.register({
-        username: data.username!,
-        email: data.email,
+        username: data.username!, 
+        email: data.email!, // data.email! (ép non-null)
         password: data.password!,
         first_name: data.first_name,
         last_name: data.last_name,
@@ -56,6 +56,7 @@ const Register = () => {
       if (data?.email?.[0]) setError("email", { message: data.email[0] });
       if (data?.non_field_errors?.[0]) setError("email", { message: data.non_field_errors[0] });
       else if (data?.message) error(data.message);
+      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -144,7 +145,7 @@ const styles = StyleSheet.create({
       marginBottom: 16,
       fontSize: 48,
       fontWeight: "900",
-      color: "#1ABDBE",
+      color: "#0066cc",
   },
   item: {
     width: '100%',
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   registerButton: {
-    backgroundColor: "#1ABDBE",
+    backgroundColor: "#0066cc",
     width: '100%',
     alignItems: "center",
   },

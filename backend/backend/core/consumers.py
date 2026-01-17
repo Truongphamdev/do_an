@@ -39,3 +39,6 @@ class ImageConsumer(BaseConsumer):
     
 class TableConsumer(BaseConsumer):
     group_name = "tables"
+    
+class OrderConsumer(BaseConsumer):
+    group_name = "orders"

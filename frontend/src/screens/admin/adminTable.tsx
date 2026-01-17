@@ -143,12 +143,12 @@ export default AdminTable
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#e1f3f8",
+        backgroundColor: "#f5f6fa",
     },
     titleHeader: {
         fontSize: 28,
         fontWeight: "900",
-        color: "#1ABDBE",
+        color: "#0066cc",
         textAlign: "center",
     },
     goBackButton: {
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: 40,
         right: 20,
-        backgroundColor: "#1ABDBE",
+        backgroundColor: "#0066cc",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",

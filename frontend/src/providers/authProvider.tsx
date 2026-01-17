@@ -1,17 +1,15 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { tokenManager } from "../api/authTokenManager";
 
 export type UserRole = "admin" | "chef" | "waiter" | "cashier" | "customer";
 
 interface User {
     id: number;
-    username: string;
     email: string;
     role: UserRole;
     first_name: string;
     last_name: string;
-    address: string;
-    phone: string;
 };
 
 interface AuthContextType {
@@ -29,14 +27,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         const loadUser = async () => {
-            const userInfo = await AsyncStorage.getItem("user_info");
-            if (userInfo) setUser(JSON.parse(userInfo));
+            const [userInfo, accessToken] = await Promise.all([
+                AsyncStorage.getItem("user_info"),
+                AsyncStorage.getItem("access_token"),
+            ]);
+
+            if (accessToken) {
+                tokenManager.set(accessToken);
+            }
+
+            if (userInfo) {
+                setUser(JSON.parse(userInfo))
+            };
+
             setLoading(false);
         }
         loadUser();
     }, []);
 
     const login = async (user: User, access: string, refresh: string) => {
+        tokenManager.set(access);
         await AsyncStorage.setItem("access_token", access);
         await AsyncStorage.setItem("refresh_token", refresh);
         await AsyncStorage.setItem("user_info", JSON.stringify(user));
@@ -44,9 +54,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const logout = async () => {
-        await AsyncStorage.removeItem("access_token");
-        await AsyncStorage.removeItem("refresh_token");
-        await AsyncStorage.removeItem("user_info");
+        tokenManager.clear();
+        await AsyncStorage.multiRemove([
+            "access_token",
+            "refresh_token",
+            "user_info",
+        ]);
         setUser(null);
     };
 

@@ -10,6 +10,7 @@ from .view import (
     ReservationViewSet,
     ReservationAdminViewSet,
     CartItemViewSet,
+    CartViewSet,
     OrderViewSet,
     AdminOrderViewSet,
     OrderCashierViewSet,
@@ -56,10 +57,12 @@ urlpatterns = [
     path('products/<int:product_pk>/images', ImageViewSet.as_view({'get':'list','post':'create'}), name='product-images'),
     path('products/<int:product_pk>/images/<int:pk>', ImageViewSet.as_view({'get':'retrieve','put':'update','delete':'destroy'}), name='product-image-detail'),
     # cartitem
-    path('carts',CartItemViewSet.as_view({'get':'list','post':'add_to_cart'})),
-    path('carts/<int:pk>',CartItemViewSet.as_view({'put':'update_to_cart','delete':'remove_cart_item'})),
+    path('carts/open', CartViewSet.as_view({'post':'open'}), name='cart-open'),
+    path('carts', CartViewSet.as_view({'get':'list'}), name='cart-active'),
+    path('cart-items',CartItemViewSet.as_view({'post':'add_to_cart'}), name='cartitem-add'),
+    path('cart-items/<int:pk>',CartItemViewSet.as_view({'put':'update_to_cart','delete':'remove_cart_item'}), name='cartitem-detail'),
     # order
-    path('orders',OrderViewSet.as_view({'post':'create'})),
+    path('orders',OrderViewSet.as_view({'get':'list', 'post':'create'})),
     path('admin/orders',AdminOrderViewSet.as_view({'get':'list_orders'})),
     # payment
     path('sepay/create/', CreateQRView.as_view(), name='sepay_create'),

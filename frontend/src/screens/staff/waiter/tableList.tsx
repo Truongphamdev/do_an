@@ -24,7 +24,7 @@ const TableList = () => {
 
   // --- REALTIME TABLE ---
   useWebSocket((message) => {
-    console.log("📌 Realtime product:", message);
+    console.log("📌 Realtime table:", message);
 
     switch(message.type) {
       case "TABLE_CREATED":
@@ -50,6 +50,7 @@ const TableList = () => {
 
   const [ statusFilter, setStatusFilter ] = useState<"all" | "available" | "occupied" | "reserved">("all");
 
+  // color
   const statusColor = {
     all: "#0080FF",
     available: "#0fbe15",
@@ -62,7 +63,9 @@ const TableList = () => {
     occupied: "#f18988",
     reserved: "#fcd79a",
   };
-  const tableColor = (status?: string) => {
+  const tableColor = (status?: string, isActive?: boolean) => {
+    if (!isActive) return "#9E9E9E"; // bàn không dùng
+
     switch (status) {
       case "available":
         return "#0fbe15";
@@ -108,6 +111,11 @@ const TableList = () => {
     return allTables.filter(prev => prev.status === statusFilter);
   }, [allTables, statusFilter]);
 
+  // helper set lại khi updated status
+  const updateTableStatusLocal = (id: number, status: TableInterface['status']) => {
+    setAllTables(prev => prev.map(table => table.id === id ? {...table, status} : table));
+  }
+
   // cấu hình cho chức năng cập nhật trạng thái của table
   const getNextAction = (table: TableInterface) => {
     if (!table.is_active) return;
@@ -137,6 +145,7 @@ const TableList = () => {
         onConfirm: async () => {
           try {
             await TableApi.updateStatus(table.id, "occupied");
+            updateTableStatusLocal(table.id, "occupied");
             success(`Bàn ${table.number} đã mở.`);
           } catch (err: any) {
             error("Mở bàn thất bại");
@@ -153,6 +162,7 @@ const TableList = () => {
         onConfirm: async () => {
           try {
             await TableApi.updateStatus(table.id, "available");
+            updateTableStatusLocal(table.id, "available");
             success(`Bàn ${table.number} đã đóng.`);
           } catch (err: any) {
             error("Đóng bàn thất bại");
@@ -172,6 +182,7 @@ const TableList = () => {
         onConfirm: async () => {
           try {
             await TableApi.updateStatus(table.id, "occupied");
+            updateTableStatusLocal(table.id, "occupied");
             success(`Khách đã vào bàn ${table.number}`);
           } catch (err: any) {
             error("Cập nhật trạng thái thất bại");
@@ -180,6 +191,7 @@ const TableList = () => {
         onCancel: async () => {
           try {
             await TableApi.updateStatus(table.id, "available");
+            updateTableStatusLocal(table.id, "available");
             success(`Đã hủy đặt bàn ${table.number}`);
           } catch (err: any) {
             error("Cập nhật trạng thái thất bại");
@@ -189,30 +201,50 @@ const TableList = () => {
     }
   }
 
+  // Kiểm tra chỉ cho phép bàn đã mở được xem chi tiết bàn và order món
+  const canOpenDetail = (table: TableInterface) => {
+    return table.is_active === true && table.status === "occupied";
+  };
+
   const renderItem = ({ item }: { item: TableInterface }) => {
-    const bgColor = tableColor(item.status);
+    const bgColor = tableColor(item.status, item.is_active);
     const action = getNextAction(item);
 
     return (
       <TouchableOpacity
-        disabled={!item.is_active}
-        onPress={() => {}}
+        disabled={!canOpenDetail(item)}
+        onPress={() => {
+          if (!canOpenDetail(item)) return;
+          navigation.navigate("TableOrderDetail", { tableId: item.id });
+        }}
         style={[
           styles.tableCard,
           { backgroundColor: bgColor },
-          !item.is_active && { opacity: 0.4 },
+          !item.is_active && { borderWidth: 1, borderColor: "#757575" },
         ]}
       >
         <Text style={styles.tableNumber}>Bàn: {item.number}</Text>
-        <Text style={styles.tableCapacity}>{item.capacity} chỗ</Text>
-        {item.status === "reserved" && (
+        {item.is_active && (
+          <Text style={styles.tableCapacity}>{item.capacity} chỗ</Text>
+        )}
+
+        {/* BÀN KHÔNG SỬ DỤNG */}
+        {!item.is_active && (
+          <Text style={styles.inActiveText}>Không sử dụng</Text>
+        )}
+        {/* BÀN ĐẶT TRƯỚC */}
+        {item.is_active && item.status === "reserved" && (
           <Text style={styles.reserveHint}>⏰ Có đặt trước</Text>
         )}
 
-        {action && (
+        {item.is_active && action && (
           <TouchableOpacity
+            activeOpacity={0.8}
             style={styles.actionButton}
-            onPress={() => handlePressTable(item)}
+            onPress={(e) => {
+              e.stopPropagation();
+              handlePressTable(item);
+            }}
           >
             <Text style={styles.actionText}>{action.text}</Text>
           </TouchableOpacity>
@@ -364,6 +396,12 @@ const styles = StyleSheet.create({
     elevation: 7,
     alignItems: "center",
     padding: 10,
+  },
+  inActiveText: {
+    marginTop: 8,
+    fontSize: 13,
+    fontWeight: "bold",
+    color: "#fff",
   },
   tableNumber: {
     width: '100%',

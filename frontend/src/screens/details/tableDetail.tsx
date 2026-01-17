@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "900",
     textAlign: "center",
-    color: "#1ABDBE",
+    color: "#0066cc",
   },
   goBackButton: {
     position: "absolute",

@@ -99,6 +99,6 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: "bold",
-        color: "#1ABDBE",
+        color: "#0066cc",
     },
 })

@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     titleHeader: {
         fontSize: 28,
         fontWeight: "900",
-        color: "#1ABDBE",
+        color: "#0066cc",
         textAlign: "center",
         marginBottom: 20,
     },
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#f2f2f2",
     },
     button: {
-        backgroundColor: "#1ABDBE",
+        backgroundColor: "#0066cc",
         width: "50%",
         padding: 12,
         borderRadius: 5,

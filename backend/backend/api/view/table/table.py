@@ -1,6 +1,6 @@
 from api.serializers import TableSerializer
 from rest_framework import viewsets
-from api.permission import IsAdminOrReadOnly
+from api.permission import IsAdminOrReadOnly, IsWaiterOrAdmin, IsCashierOrAdmin
 from api.models import Table
 from rest_framework.response import Response
 from rest_framework import status
@@ -47,7 +47,8 @@ class TableViewSet(viewsets.ModelViewSet):
         
         return Response({"detail": "Bàn đã được bật thành công."},status=status.HTTP_200_OK)
     
-    @action(detail=True, methods=['patch'], url_path='update_status')
+    # Chức năng dành riêng cho phục vụ thay đổi trạng thái bàn
+    @action(detail=True, methods=['patch'], url_path='update_status', permission_classes=[IsWaiterOrAdmin])
     def update_status(self, request, pk=None):
         table = self.get_object()
         new_status = request.data.get('status')
@@ -57,26 +58,22 @@ class TableViewSet(viewsets.ModelViewSet):
                 {"detail": "Bàn đang bị khóa, không thể đổi trạng thái"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
         if new_status not in ['available', 'occupied', 'reserved']:
             return Response(
                 {"detail": "Trạng thái không hợp lệ!"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-            
         if table.status == new_status:
             return Response(
                 {"detail": "Bàn đang ở trạng thái này"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
         # Ngăn chặn trạng thái đổi loạn
         allowed_transitions = {
             'available': ['occupied', 'reserved'],
             'reserved': ['occupied', 'available'],
             'occupied': ['available'],
         }
-        
         if new_status not in allowed_transitions.get(table.status, []):
             return Response(
                 {"detail": "Không thể chuyển trạng thái này"},
@@ -97,8 +94,30 @@ class TableViewSet(viewsets.ModelViewSet):
         # Trống -> có khách
         if table.status == 'available' and new_status == 'occupied':
             pass
-        
         table.status = new_status
+        table.save()
+        
+        return Response(
+            TableSerializer(table).data,
+            status=status.HTTP_200_OK
+        )
+        
+    # chức năng dành riêng cho thu ngân đặt bàn khi có khách yêu cầu giữ chỗ
+    @action(detail=True, methods=['patch'], url_path='reserved', permission_classes=[IsCashierOrAdmin])
+    def reserved_table(self, request, pk=None):
+        table = self.get_object()
+        
+        if not table.is_active:
+            return Response(
+                {"detail": "Bàn đang bị khóa"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if table.status != 'available':
+            return Response(
+                {"detail": "Chỉ được đặt bàn trống"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        table.status = 'reserved'
         table.save()
         
         return Response(

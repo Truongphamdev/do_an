@@ -14,7 +14,7 @@ import { useNotify } from '../../providers/notificationProvider'
 // api
 import { authApi } from '../../api/auth.api'
 // auth
-import { useAuth } from '../../providers/authProvider'
+import { useAuth, UserRole } from '../../providers/authProvider'
 
 const Login = () => {
   const { control, handleSubmit, formState: { errors }, setError } = useForm<LoginForm>({
@@ -40,7 +40,7 @@ const Login = () => {
       // Thông báo
       success("Đăng nhập thành công!");
       // gọi AuthContext để xử lý
-      await login(user, access, refresh);
+      await login({...user, role: user.role as UserRole}, access, refresh);
 
     } catch (err: any) {
       // Thông báo lỗi
@@ -55,6 +55,7 @@ const Login = () => {
         else setError("password", { message: msg });
       }
       else if (data?.message) error(data.message);
+      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
       marginBottom: 16,
       fontSize: 48,
       fontWeight: "900",
-      color: "#1ABDBE",
+      color: "#0066cc",
   },
   item: {
     width: '100%',
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   loginButton: {
-    backgroundColor: "#1ABDBE",
+    backgroundColor: "#0066cc",
     width: '100%',
     alignItems: "center",
   },

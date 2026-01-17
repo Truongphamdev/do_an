@@ -125,8 +125,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '10/min',
-        'user': '120/min',
+        'anon': '1000/min',
+        'user': '5000/min',
     }
 }
 # Password validation
